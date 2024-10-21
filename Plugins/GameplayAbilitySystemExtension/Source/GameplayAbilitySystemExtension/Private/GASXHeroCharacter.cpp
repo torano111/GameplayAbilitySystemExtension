@@ -16,6 +16,7 @@ void AGASXHeroCharacter::PossessedBy(AController* NewController)
 	if (AGASXPlayerState* PS = Cast<AGASXPlayerState>(NewController->PlayerState))
 	{
 		AbilitySystemComponent = PS->GetGASXAbilitySystemComponent();
+		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
 	}
 
 	Super::PossessedBy(NewController);
