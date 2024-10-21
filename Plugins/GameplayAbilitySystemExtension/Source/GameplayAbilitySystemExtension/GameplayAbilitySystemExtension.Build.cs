@@ -26,8 +26,10 @@ public class GameplayAbilitySystemExtension : ModuleRules
 			new string[]
 			{
 				"Core",
-				"GameplayAbilities"
-			}
+                "GameplayAbilities",
+				"GameplayTags",
+				"GameplayTasks"
+            }
 			);
 			
 		
