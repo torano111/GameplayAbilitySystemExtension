@@ -1,4 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
+// This code is mostly from ActionRPG sample.
 
 #pragma once
 
