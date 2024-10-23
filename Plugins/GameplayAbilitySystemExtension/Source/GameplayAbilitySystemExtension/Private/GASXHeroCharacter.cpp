@@ -9,15 +9,11 @@ AGASXHeroCharacter::AGASXHeroCharacter(const FObjectInitializer& ObjectInitializ
 {
 }
 
-void AGASXHeroCharacter::PossessedBy(AController* NewController)
+void AGASXHeroCharacter::InitializeGAS(AController* NewController, AGASXPlayerState* NewPlayerState)
 {
-	UE_LOG(LogTemp, Log, TEXT("AGASXHeroCharacter::PossessedBy"));
-
-	if (AGASXPlayerState* PS = Cast<AGASXPlayerState>(NewController->PlayerState))
+	if (NewPlayerState)
 	{
-		AbilitySystemComponent = PS->GetGASXAbilitySystemComponent();
-		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
+		AbilitySystemComponent = NewPlayerState->GetGASXAbilitySystemComponent();
+		AbilitySystemComponent->InitAbilityActorInfo(NewPlayerState, this);
 	}
-
-	Super::PossessedBy(NewController);
 }

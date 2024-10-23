@@ -1,6 +1,7 @@
 // Copyright 2024 Toranosuke Ichikawa
 
 #include "GASXBaseCharacter.h"
+#include "GASXPlayerState.h"
 #include "GASXAbilitySystemComponent.h"
 
 // Sets default values
@@ -17,6 +18,15 @@ void AGASXBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AGASXBaseCharacter::PossessedBy(AController* NewController)
+{
+	// Initialize GAS before ReceivePossessed (BP event Possessed)
+	AGASXPlayerState* PS = NewController ? Cast<AGASXPlayerState>(NewController->PlayerState) : nullptr;
+	InitializeGAS(NewController, PS);
+
+	Super::PossessedBy(NewController);
 }
 
 // Called every frame

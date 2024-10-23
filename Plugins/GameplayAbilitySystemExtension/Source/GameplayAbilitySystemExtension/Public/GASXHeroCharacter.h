@@ -18,6 +18,6 @@ class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXHeroCharacter : public AGASXBaseCh
 public:
 	AGASXHeroCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	// Only called on the Server. Calls before Server's AcknowledgePossession.
-	virtual void PossessedBy(AController* NewController) override;
+protected:
+	virtual void InitializeGAS(AController* NewController, class AGASXPlayerState* NewPlayerState) override;
 };

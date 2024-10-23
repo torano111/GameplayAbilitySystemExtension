@@ -33,7 +33,13 @@ public:
 
 	virtual class UGASXAbilitySystemComponent* GetGASXAbilitySystemComponent() const;
 
+	// Only called on the Server. Calls before Server's AcknowledgePossession.
+	virtual void PossessedBy(AController* NewController) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Place to initialize GAS things, such as ASC, attributes, startup effects and abilities etc.
+	virtual void InitializeGAS(AController* NewController, class AGASXPlayerState* NewPlayerState) { };
 };
