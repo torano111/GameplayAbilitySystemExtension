@@ -41,5 +41,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Place to initialize GAS things, such as ASC, attributes, startup effects and abilities etc.
-	virtual void InitializeGAS(AController* NewController, class AGASXPlayerState* NewPlayerState) { };
+	// This should be called in PossessedBy for hero characters, and in BeginPlay for AI controlled characters. NewPlayerState can be nullptr for AI controlled characters.
+	virtual void InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* InAvatarActor, class AGASXPlayerState* NewPlayerState = nullptr);
 };

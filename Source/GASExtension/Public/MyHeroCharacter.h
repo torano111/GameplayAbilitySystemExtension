@@ -3,26 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GASXHeroCharacter.h"
+#include "MyBaseCharacter.h"
 #include "MyHeroCharacter.generated.h"
 
 /**
- * 
+ * Example hero character.
  */
 UCLASS()
-class GASEXTENSION_API AMyHeroCharacter : public AGASXHeroCharacter
+class GASEXTENSION_API AMyHeroCharacter : public AMyBaseCharacter
 {
 	GENERATED_BODY()
-
-protected:
-	TWeakObjectPtr<class UMyAttributeSet> MyAttributeSet;
 	
 public:
 	AMyHeroCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
-	UFUNCTION(BlueprintPure, Category = "MyHeroCharacter")
-	class UMyAttributeSet* GetMyAttributeSet() const;
-
-protected:
-	virtual void InitializeGAS(AController* NewController, class AGASXPlayerState* NewPlayerState) override;
 };
