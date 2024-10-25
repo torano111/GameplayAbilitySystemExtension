@@ -15,6 +15,11 @@ class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXBaseCharacter : public ACharacter,
 {
 	GENERATED_BODY()
 
+public:
+	// If this is true and a PlayerState is found, then automatically initializes AbilitySystemComponent and call InitGameplayAbilitySystem in PossessedBy.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXBaseCharacter")
+	bool bAutoInitGASOnPossessed;
+
 protected:
 	TWeakObjectPtr<class UGASXAbilitySystemComponent> AbilitySystemComponent;
 

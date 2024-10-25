@@ -7,6 +7,7 @@
 // Sets default values
 AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
+	, bAutoInitGASOnPossessed(true)
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -22,11 +23,16 @@ void AGASXBaseCharacter::BeginPlay()
 
 void AGASXBaseCharacter::PossessedBy(AController* NewController)
 {
-	// Initialize GAS before ReceivePossessed (BP event Possessed)
-	AGASXPlayerState* PS = NewController ? Cast<AGASXPlayerState>(NewController->PlayerState) : nullptr;
-	check(PS);
-	if (!AbilitySystemComponent.IsValid()) AbilitySystemComponent = PS->GetGASXAbilitySystemComponent();
-	InitGameplayAbilitySystem(PS, this, PS);
+	// Initialize GAS before ReceivePossessed (BP event Possessed) if needed
+	if (bAutoInitGASOnPossessed)
+	{
+		AGASXPlayerState* PS = NewController ? Cast<AGASXPlayerState>(NewController->PlayerState) : nullptr;
+		if (PS)
+		{
+			if (!AbilitySystemComponent.IsValid()) AbilitySystemComponent = PS->GetGASXAbilitySystemComponent();
+			InitGameplayAbilitySystem(PS, this, PS);
+		}
+	}
 
 	Super::PossessedBy(NewController);
 }
