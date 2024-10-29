@@ -4,6 +4,8 @@
 #include "GASXAbilitySystemComponent.h"
 #include "GASXAbilityCost.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "GASXTargetType.h"
+#include "GASXBaseCharacter.h"
 
 UGASXGameplayAbility::UGASXGameplayAbility()
 	: Super()
@@ -99,4 +101,63 @@ void UGASXGameplayAbility::ApplyCost(const FGameplayAbilitySpecHandle Handle, co
 			AdditionalCost->ApplyCost(this, Handle, ActorInfo, ActivationInfo);
 		}
 	}
+}
+
+FGASXGameplayEffectContainerSpec UGASXGameplayAbility::MakeEffectContainerSpecFromContainer(const FGASXGameplayEffectContainer& Container, const FGameplayEventData& EventData, int32 OverrideGameplayLevel)
+{
+	// First figure out our actor info
+	FGASXGameplayEffectContainerSpec ReturnSpec;
+
+	// If we have a target type, run the targeting logic. This is optional, targets can be added later
+	if (Container.TargetType.Get())
+	{
+		TArray<FHitResult> HitResults;
+		TArray<AActor*> TargetActors;
+		const UGASXTargetType* TargetTypeCDO = Container.TargetType.GetDefaultObject();
+		AActor* AvatarActor = GetAvatarActorFromActorInfo();
+		TargetTypeCDO->GetTargets(GetActorInfo(), EventData, HitResults, TargetActors);
+		ReturnSpec.AddTargets(HitResults, TargetActors);
+	}
+
+	// If we don't have an override level, use the default on the ability itself
+	if (OverrideGameplayLevel == INDEX_NONE)
+	{
+		OverrideGameplayLevel = OverrideGameplayLevel = this->GetAbilityLevel(); //OwningASC->GetDefaultAbilityLevel();
+	}
+
+	// Build GameplayEffectSpecs for each applied effect
+	for (const TSubclassOf<UGameplayEffect>& EffectClass : Container.TargetGameplayEffectClasses)
+	{
+		ReturnSpec.TargetGameplayEffectSpecs.Add(MakeOutgoingGameplayEffectSpec(EffectClass, OverrideGameplayLevel));
+	}
+	return ReturnSpec;
+}
+
+FGASXGameplayEffectContainerSpec UGASXGameplayAbility::MakeEffectContainerSpec(FGameplayTag ContainerTag, const FGameplayEventData& EventData, int32 OverrideGameplayLevel)
+{
+	FGASXGameplayEffectContainer* FoundContainer = EffectContainerMap.Find(ContainerTag);
+
+	if (FoundContainer)
+	{
+		return MakeEffectContainerSpecFromContainer(*FoundContainer, EventData, OverrideGameplayLevel);
+	}
+	return FGASXGameplayEffectContainerSpec();
+}
+
+TArray<FActiveGameplayEffectHandle> UGASXGameplayAbility::ApplyEffectContainerSpec(const FGASXGameplayEffectContainerSpec& ContainerSpec)
+{
+	TArray<FActiveGameplayEffectHandle> AllEffects;
+
+	// Iterate list of effect specs and apply them to their target data
+	for (const FGameplayEffectSpecHandle& SpecHandle : ContainerSpec.TargetGameplayEffectSpecs)
+	{
+		AllEffects.Append(K2_ApplyGameplayEffectSpecToTarget(SpecHandle, ContainerSpec.TargetData));
+	}
+	return AllEffects;
+}
+
+TArray<FActiveGameplayEffectHandle> UGASXGameplayAbility::ApplyEffectContainer(FGameplayTag ContainerTag, const FGameplayEventData& EventData, int32 OverrideGameplayLevel)
+{
+	FGASXGameplayEffectContainerSpec Spec = MakeEffectContainerSpec(ContainerTag, EventData, OverrideGameplayLevel);
+	return ApplyEffectContainerSpec(Spec);
 }
