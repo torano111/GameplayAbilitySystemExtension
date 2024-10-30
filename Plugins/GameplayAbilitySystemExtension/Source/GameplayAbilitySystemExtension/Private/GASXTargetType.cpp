@@ -97,72 +97,525 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 
 	TArray<AActor*> ActorsToIgnore = GetActorsToIgnore(ActorInfo, EventData);
 
-	bool bHit = false;
-	switch (TraceType)
+	if (UObject* WorldContextObject = GetWorldContextObjectFromActorInfo(ActorInfo))
 	{
-	case EGASXTraceTargetType::TTT_ByChannel:
-		bHit = UKismetSystemLibrary::SphereTraceMulti(
-			GetWorldContextObjectFromActorInfo(ActorInfo),
-			Start,
-			End,
-			SphereRadius,
-			TraceChannel,
-			bTraceComplex,
-			ActorsToIgnore,
-			DrawDebugType,
-			OutHitResults,
-			true,
-			DebugTraceColor,
-			DebugTraceHitColor,
-			DebugDrawTime
-		);
-		break;
-	case EGASXTraceTargetType::TTT_ByProfile:
-		bHit = UKismetSystemLibrary::SphereTraceMultiByProfile(
-			GetWorldContextObjectFromActorInfo(ActorInfo),
-			Start,
-			End,
-			SphereRadius,
-			ProfileName,
-			bTraceComplex,
-			ActorsToIgnore,
-			DrawDebugType,
-			OutHitResults,
-			true,
-			DebugTraceColor,
-			DebugTraceHitColor,
-			DebugDrawTime
-		);
-		break;
-	case EGASXTraceTargetType::TTT_ByObjectTypes:
-		bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
-			GetWorldContextObjectFromActorInfo(ActorInfo),
-			Start,
-			End,
-			SphereRadius,
-			ObjectTypes,
-			bTraceComplex,
-			ActorsToIgnore,
-			DrawDebugType,
-			OutHitResults,
-			true,
-			DebugTraceColor,
-			DebugTraceHitColor,
-			DebugDrawTime
-		);
-		break;
-	default:
-		break;
-	}
+		bool bHit = false;
 
-	if (bHit && bHitActorsAsTargets)
-	{
-		for (const auto& Hit : OutHitResults)
+		if (TraceShapeType == EGASXTraceShapeType::TST_LineTrace)
 		{
-			// no duplicates
-			OutActors.AddUnique(Hit.GetActor());
+			if (TraceHitType == EGASXTraceHitType::THT_SingleTrace)
+			{
+				FHitResult SingleHitResult;
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::LineTraceSingle(
+						WorldContextObject,
+						Start,
+						End,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::LineTraceSingleByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::LineTraceSingleForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+
+				if (bHit) OutHitResults.Add(SingleHitResult);
+			}
+			else if (TraceHitType == EGASXTraceHitType::THT_MultiTrace)
+			{
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::LineTraceMulti(
+						WorldContextObject,
+						Start,
+						End,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::LineTraceMultiByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::LineTraceMultiForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+			}
 		}
-		OutHitResults.Empty();
+		else if (TraceShapeType == EGASXTraceShapeType::TST_SphereTrace)
+		{
+
+			if (TraceHitType == EGASXTraceHitType::THT_SingleTrace)
+			{
+				FHitResult SingleHitResult;
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::SphereTraceSingle(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::SphereTraceSingleByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::SphereTraceSingleForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+
+				if (bHit) OutHitResults.Add(SingleHitResult);
+			}
+			else if (TraceHitType == EGASXTraceHitType::THT_MultiTrace)
+			{
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::SphereTraceMulti(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::SphereTraceMultiByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		else if (TraceShapeType == EGASXTraceShapeType::TST_CapsuleTrace)
+		{
+
+			if (TraceHitType == EGASXTraceHitType::THT_SingleTrace)
+			{
+				FHitResult SingleHitResult;
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::CapsuleTraceSingle(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						CapsuleTraceHalfHeight,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::CapsuleTraceSingleByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						CapsuleTraceHalfHeight,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::CapsuleTraceSingleForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						CapsuleTraceHalfHeight,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+
+				if (bHit) OutHitResults.Add(SingleHitResult);
+			}
+			else if (TraceHitType == EGASXTraceHitType::THT_MultiTrace)
+			{
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::CapsuleTraceMulti(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						CapsuleTraceHalfHeight,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::CapsuleTraceMultiByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						CapsuleTraceHalfHeight,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::CapsuleTraceMultiForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						TraceRadius,
+						CapsuleTraceHalfHeight,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		else if (TraceShapeType == EGASXTraceShapeType::TST_BoxTrace)
+		{
+
+			if (TraceHitType == EGASXTraceHitType::THT_SingleTrace)
+			{
+				FHitResult SingleHitResult;
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::BoxTraceSingle(
+						WorldContextObject,
+						Start,
+						End,
+						BoxTraceHalfSize,
+						BoxTraceOrientation,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::BoxTraceSingleByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						BoxTraceHalfSize,
+						BoxTraceOrientation,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::BoxTraceSingleForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						BoxTraceHalfSize,
+						BoxTraceOrientation,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						SingleHitResult,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+
+				if (bHit) OutHitResults.Add(SingleHitResult);
+			}
+			else if (TraceHitType == EGASXTraceHitType::THT_MultiTrace)
+			{
+				switch (TraceTargetType)
+				{
+				case EGASXTraceTargetType::TTT_ByChannel:
+					bHit = UKismetSystemLibrary::BoxTraceMulti(
+						WorldContextObject,
+						Start,
+						End,
+						BoxTraceHalfSize,
+						BoxTraceOrientation,
+						TraceChannel,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByProfile:
+					bHit = UKismetSystemLibrary::BoxTraceMultiByProfile(
+						WorldContextObject,
+						Start,
+						End,
+						BoxTraceHalfSize,
+						BoxTraceOrientation,
+						ProfileName,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				case EGASXTraceTargetType::TTT_ByObjectTypes:
+					bHit = UKismetSystemLibrary::BoxTraceMultiForObjects(
+						WorldContextObject,
+						Start,
+						End,
+						BoxTraceHalfSize,
+						BoxTraceOrientation,
+						ObjectTypes,
+						bTraceComplex,
+						ActorsToIgnore,
+						DrawDebugType,
+						OutHitResults,
+						true,
+						DebugTraceColor,
+						DebugTraceHitColor,
+						DebugDrawTime
+					);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		if (bHit && bHitActorsAsTargets)
+		{
+			for (const auto& Hit : OutHitResults)
+			{
+				// no duplicates
+				OutActors.AddUnique(Hit.GetActor());
+			}
+			OutHitResults.Empty();
+		}
 	}
 }
 
