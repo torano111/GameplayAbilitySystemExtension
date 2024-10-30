@@ -38,7 +38,7 @@ void UGASXTargetType_UseEventData::GetTargets_Implementation(FGameplayAbilityAct
 	}
 }
 
-UObject* UGASXTargetType_MultiSphereTrace::GetSceneObject(FGameplayAbilityActorInfo ActorInfo) const
+UObject* UGASXTargetType_TraceBase::GetSceneObject(FGameplayAbilityActorInfo ActorInfo) const
 {
 	switch (SceneObjectType)
 	{
@@ -58,7 +58,7 @@ UObject* UGASXTargetType_MultiSphereTrace::GetSceneObject(FGameplayAbilityActorI
 	return nullptr;
 }
 
-FTransform UGASXTargetType_MultiSphereTrace::GetSceneObjectTransform(FGameplayAbilityActorInfo ActorInfo) const
+FTransform UGASXTargetType_TraceBase::GetSceneObjectTransform(FGameplayAbilityActorInfo ActorInfo) const
 {
 	switch (SceneObjectType)
 	{
@@ -78,19 +78,19 @@ FTransform UGASXTargetType_MultiSphereTrace::GetSceneObjectTransform(FGameplayAb
 	return FTransform();
 }
 
-void UGASXTargetType_MultiSphereTrace::GetTraceStartAndEnd_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, FVector& OutStart, FVector& OutEnd) const
+void UGASXTargetType_TraceBase::GetTraceStartAndEnd_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, FVector& OutStart, FVector& OutEnd) const
 {
 	return;
 }
 
-TArray<AActor*> UGASXTargetType_MultiSphereTrace::GetActorsToIgnore_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData) const
+TArray<AActor*> UGASXTargetType_TraceBase::GetActorsToIgnore_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData) const
 {
 	TArray<AActor*> Actors;
 	if (ActorInfo.AvatarActor.IsValid()) Actors.Add(ActorInfo.AvatarActor.Get());
 	return Actors;
 }
 
-void UGASXTargetType_MultiSphereTrace::GetTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors) const
+void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors) const
 {
 	FVector Start, End;
 	GetTraceStartAndEnd(ActorInfo, EventData, Start, End);
@@ -100,7 +100,7 @@ void UGASXTargetType_MultiSphereTrace::GetTargets_Implementation(FGameplayAbilit
 	bool bHit = false;
 	switch (TraceType)
 	{
-	case EGASXTraceType::TT_ByChannel:
+	case EGASXTraceTargetType::TTT_ByChannel:
 		bHit = UKismetSystemLibrary::SphereTraceMulti(
 			GetWorldContextObjectFromActorInfo(ActorInfo),
 			Start,
@@ -117,7 +117,7 @@ void UGASXTargetType_MultiSphereTrace::GetTargets_Implementation(FGameplayAbilit
 			DebugDrawTime
 		);
 		break;
-	case EGASXTraceType::TT_ByProfile:
+	case EGASXTraceTargetType::TTT_ByProfile:
 		bHit = UKismetSystemLibrary::SphereTraceMultiByProfile(
 			GetWorldContextObjectFromActorInfo(ActorInfo),
 			Start,
@@ -134,7 +134,7 @@ void UGASXTargetType_MultiSphereTrace::GetTargets_Implementation(FGameplayAbilit
 			DebugDrawTime
 		);
 		break;
-	case EGASXTraceType::TT_ByObjectTypes:
+	case EGASXTraceTargetType::TTT_ByObjectTypes:
 		bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
 			GetWorldContextObjectFromActorInfo(ActorInfo),
 			Start,
@@ -167,7 +167,7 @@ void UGASXTargetType_MultiSphereTrace::GetTargets_Implementation(FGameplayAbilit
 }
 
 #if WITH_EDITOR
-TArray<FName> UGASXTargetType_MultiSphereTrace::GetCollisionProfileNames()
+TArray<FName> UGASXTargetType_TraceBase::GetCollisionProfileNames()
 {
 	TArray<TSharedPtr<FName>> SharedNames;
 	UCollisionProfile::GetProfileNames(SharedNames);
@@ -186,7 +186,7 @@ TArray<FName> UGASXTargetType_MultiSphereTrace::GetCollisionProfileNames()
 }
 #endif
 
-void UGASXTargetType_MultiSphereTraceFromAvatarActor::GetTraceStartAndEnd_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, FVector& OutStart, FVector& OutEnd) const
+void UGASXTargetType_TraceFromAvatarActor::GetTraceStartAndEnd_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, FVector& OutStart, FVector& OutEnd) const
 {
 	FTransform BaseTransform = GetSceneObjectTransform(ActorInfo);
 	FVector BaseForward = BaseTransform.GetUnitAxis(EAxis::X);

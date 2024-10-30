@@ -23,11 +23,11 @@ enum class ESceneObjectType : uint8
 };
 
 UENUM(BlueprintType)
-enum class EGASXTraceType : uint8
+enum class EGASXTraceTargetType : uint8
 {
-	TT_ByChannel		UMETA(DisplayName = "ByChannel"),
-	TT_ByProfile		UMETA(DisplayName = "ByProfile"),
-	TT_ByObjectTypes	UMETA(DisplayName = "ByObjectTypes")
+	TTT_ByChannel		UMETA(DisplayName = "ByChannel"),
+	TTT_ByProfile		UMETA(DisplayName = "ByProfile"),
+	TTT_ByObjectTypes	UMETA(DisplayName = "ByObjectTypes")
 };
 
 /**
@@ -98,14 +98,14 @@ public:
 
 /** Trivial target type that pulls targets with a sphere trace */
 UCLASS(Abstract)
-class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXTargetType_MultiSphereTrace : public UGASXTargetType
+class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXTargetType_TraceBase : public UGASXTargetType
 {
 	GENERATED_BODY()
 
 public:
 	// Sphere trace type
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType")
-	EGASXTraceType TraceType = EGASXTraceType::TT_ByChannel;
+	EGASXTraceTargetType TraceType = EGASXTraceTargetType::TTT_ByChannel;
 
 	// Used for util function like GetSceneObjectTransform. By default, this is NOT used for trace, and it is up to subclasses.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="GASXTargetType")
@@ -147,7 +147,7 @@ public:
 
 public:
 	// Constructor and overrides
-	UGASXTargetType_MultiSphereTrace() {}
+	UGASXTargetType_TraceBase() {}
 
 	// Gets an object from ActorInfo with SceneObjectType
 	UFUNCTION(BlueprintPure, Category = "GASXTargetType")
@@ -176,7 +176,7 @@ public:
 
 /** Trivial target type that pulls targets with a sphere trace from avatar actor to actor forward. */
 UCLASS()
-class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXTargetType_MultiSphereTraceFromAvatarActor : public UGASXTargetType_MultiSphereTrace
+class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXTargetType_TraceFromAvatarActor : public UGASXTargetType_TraceBase
 {
 	GENERATED_BODY()
 
