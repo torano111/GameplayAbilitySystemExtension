@@ -16,12 +16,13 @@ bool UGASXAbilityCost_AttributeCost::CheckCost(const UGASXGameplayAbility* Abili
 		check(AbilitySystemComponent != nullptr);
 		if (!AbilitySystemComponent->CanApplyAttributeModifiers(CostGE, Ability->GetAbilityLevel(Handle, ActorInfo), Ability->MakeEffectContext(Handle, ActorInfo)))
 		{
-			//const FGameplayTag& CostTag = UAbilitySystemGlobals::Get().ActivateFailCostTag;
+			// Apply an activation failed tag.
+			const FGameplayTag& CostTag = UAbilitySystemGlobals::Get().ActivateFailCostTag;
 
-			//if (OptionalRelevantTags && CostTag.IsValid())
-			//{
-			//	OptionalRelevantTags->AddTag(CostTag);
-			//}
+			if (OptionalRelevantTags && CostTag.IsValid())
+			{
+				OptionalRelevantTags->AddTag(CostTag);
+			}
 			return false;
 		}
 	}
