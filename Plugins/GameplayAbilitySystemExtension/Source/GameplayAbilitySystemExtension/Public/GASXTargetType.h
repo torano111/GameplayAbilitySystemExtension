@@ -119,13 +119,43 @@ class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXTargetType_TraceBase : public UGAS
 	GENERATED_BODY()
 
 public:
-	// Sphere trace type
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
+	// trace by channel, profile, or object types?
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|TargetSettings")
 	EGASXTraceTargetType TraceTargetType = EGASXTraceTargetType::TTT_ByChannel;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
+	// used for trace if TraceTargetType is set to TTT_ByChannel
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|TargetSettings", meta = (EditCondition = "TraceTargetType == EGASXTraceTargetType::TTT_ByChannel"))
+	TEnumAsByte<ETraceTypeQuery> TraceChannel = ETraceTypeQuery::TraceTypeQuery1;
+
+	// used for trace if TraceTargetType is set to TTT_ByProfile
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|TargetSettings", meta = (GetOptions = "GetCollisionProfileNames", EditCondition = "TraceTargetType == EGASXTraceTargetType::TTT_ByProfile"))
+	FName ProfileName;
+
+	// used for trace if TraceTargetType is set to TTT_ByObjectTypes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|TargetSettings", meta = (EditCondition = "TraceTargetType == EGASXTraceTargetType::TTT_ByObjectTypes"))
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+
+	// trace shape type: line, sphere, capsule or box
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings")
 	EGASXTraceShapeType TraceShapeType = EGASXTraceShapeType::TST_LineTrace;
 
+	// for sphere trace and capsule trace
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings", meta = (EditCondition = "TraceShapeType == EGASXTraceShapeType::TST_SphereTrace || TraceShapeType == EGASXTraceShapeType::TST_CapsuleTrace"))
+	float TraceRadius = 0.f;
+
+	// for capsule trace
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings", meta = (EditCondition = "TraceShapeType == EGASXTraceShapeType::TST_CapsuleTrace"))
+	float CapsuleTraceHalfHeight = 0.f;
+
+	// for box trace
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings", meta = (EditCondition = "TraceShapeType == EGASXTraceShapeType::TST_BoxTrace"))
+	FVector BoxTraceHalfSize = FVector(0.f, 0.f, 0.f);
+
+	// for box trace
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings", meta = (EditCondition = "TraceShapeType == EGASXTraceShapeType::TST_BoxTrace"))
+	FRotator BoxTraceOrientation = FRotator(0.f, 0.f, 0.f);
+
+	// single or multi trace
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
 	EGASXTraceHitType TraceHitType = EGASXTraceHitType::THT_SingleTrace;
 
@@ -137,47 +167,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
 	bool bHitActorsAsTargets = true;
 
-	// for sphere trace and capsule trace
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings")
-	float TraceRadius = 0.f;
-
-	// for capsule trace
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings")
-	float CapsuleTraceHalfHeight = 0.f;
-
-	// for box trace
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings")
-	FVector BoxTraceHalfSize = FVector(0.f, 0.f, 0.f);
-
-	// for box trace
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|ShapeSettings")
-	FRotator BoxTraceOrientation = FRotator(0.f, 0.f, 0.f);
-
-	// used for trace if TraceType is set to TT_ByChannel
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
-	TEnumAsByte<ETraceTypeQuery> TraceChannel = ETraceTypeQuery::TraceTypeQuery1;
-
-	// used for trace if TraceType is set to TT_ByProfile
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace", meta = (GetOptions = "GetCollisionProfileNames"))
-	FName ProfileName;
-
-	// used for trace if TraceType is set to TT_ByObjectTypes
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
 	bool bTraceComplex = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
-	TEnumAsByte <EDrawDebugTrace::Type> DrawDebugType = EDrawDebugTrace::Type::None;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|Debug")
+	TEnumAsByte<EDrawDebugTrace::Type> DrawDebugType = EDrawDebugTrace::Type::None;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|Debug")
 	FLinearColor DebugTraceColor = FLinearColor::Red;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|Debug")
 	FLinearColor DebugTraceHitColor = FLinearColor::Green;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|Debug")
 	float DebugDrawTime = 5.f;
 
 public:
