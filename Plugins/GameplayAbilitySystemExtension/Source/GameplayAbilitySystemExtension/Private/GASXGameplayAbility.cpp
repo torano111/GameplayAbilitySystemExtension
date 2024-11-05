@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GASXTargetType.h"
 #include "GASXBaseCharacter.h"
+#include "GASXGameplayEffect_Cooldown.h"
 
 UGASXGameplayAbility::UGASXGameplayAbility()
 	: Super()
@@ -101,6 +102,36 @@ void UGASXGameplayAbility::ApplyCost(const FGameplayAbilitySpecHandle Handle, co
 			AdditionalCost->ApplyCost(this, Handle, ActorInfo, ActivationInfo);
 		}
 	}
+}
+
+const FGameplayTagContainer* UGASXGameplayAbility::GetCooldownTags() const
+{
+	const FGameplayTagContainer* ParentTags = Super::GetCooldownTags();
+	FGameplayTagContainer* MutableTags = const_cast<FGameplayTagContainer*>(&UnitedCooldownTags);
+	MutableTags->Reset(); // MutableTags writes to the UnitedCooldownTags on the CDO so clear it in case the ability cooldown tags change (moved to a different slot)
+
+	if (ParentTags) MutableTags->AppendTags(*ParentTags);
+	if (IsUsingGASXCooldownGEClass()) MutableTags->AppendTags(CooldownTags);
+
+	return MutableTags;
+}
+
+void UGASXGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
+	if (CooldownGE)
+	{
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
+		if (IsUsingGASXCooldownGEClass()) SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);	// Pass cooldown tags to GE.
+		// we don't pass CooldownDuration to GE, because UGASXGameplayEffect_Cooldown uses UGASXGameplayEffect_Cooldown which returns this class's CooldownDuration as base magnitude.
+		
+		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+	}
+}
+
+bool UGASXGameplayAbility::IsUsingGASXCooldownGEClass() const
+{
+	return CooldownGameplayEffectClass && CooldownGameplayEffectClass->IsChildOf(UGASXGameplayEffect_Cooldown::StaticClass());
 }
 
 FGASXGameplayEffectContainerSpec UGASXGameplayAbility::MakeEffectContainerSpecFromContainer(const FGASXGameplayEffectContainer& Container, const FGameplayEventData& EventData, int32 OverrideGameplayLevel)

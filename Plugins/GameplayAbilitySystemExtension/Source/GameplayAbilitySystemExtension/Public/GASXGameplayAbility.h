@@ -24,20 +24,39 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = GameplayEffects)
 	TMap<FGameplayTag, FGASXGameplayEffectContainer> EffectContainerMap;
 
-protected:
 	// Additional costs that must be paid to activate this ability
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = Costs)
 	TArray<TObjectPtr<class UGASXAbilityCost>> AdditionalCosts;
+
+	// Custom cooldown duration for UGASXGameplayEffect_Cooldown
+	UPROPERTY(EditDefaultsOnly, Category = Cooldowns, meta = (EditCondition = "IsUsingGASXCooldownGEClass()"))
+	FScalableFloat CooldownDuration;
+
+	// Custom cooldown tags for UGASXGameplayEffect_Cooldown
+	UPROPERTY(EditDefaultsOnly, Category = Cooldowns, meta = (EditCondition = "IsUsingGASXCooldownGEClass()"))
+	FGameplayTagContainer CooldownTags;
+
+protected:
+	// Temporary tag container that we will return the pointer to in GetCooldownTags().
+	// This will be a union of CooldownTags and the Cooldown GE's cooldown tags.
+	UPROPERTY(Transient)
+	FGameplayTagContainer UnitedCooldownTags;
+
 
 public:
 	UGASXGameplayAbility();
 
 	// UGameplayAbility interface
-	/** Called when the avatar actor is set/changes */
-	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override; /** Called when the avatar actor is set/changes */
 	virtual bool CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
+	virtual const FGameplayTagContainer* GetCooldownTags() const override; /** Returns all tags that can put this ability into cooldown */
+	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override; /** Applies CooldownGameplayEffect to the target */
 	// End of UGameplayAbility interface
+
+	// Checks if CooldownGameplayEffectClass is a child class of UGASXGameplayEffect_Cooldown
+	UFUNCTION(BlueprintPure, Category = Ability)
+	bool IsUsingGASXCooldownGEClass() const;
 
 	/** Make gameplay effect container spec to be applied later, using the passed in container. This also runs targeting logic if the efffect container has a target type. */
 	UFUNCTION(BlueprintCallable, Category = Ability, meta = (AutoCreateRefTerm = "EventData"))
