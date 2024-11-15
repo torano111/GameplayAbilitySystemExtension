@@ -1,7 +1,7 @@
 // Copyright 2024 Toranosuke Ichikawa
 
-#include "GASXGameplayEffect_Cooldown.h"
-#include "GASXMMC_Cooldown.h"
+#include "GameplayEffects/GASXGameplayEffect_Cooldown.h"
+#include "ModMagnitudeCalculations/GASXMMC_Cooldown.h"
 
 UGASXGameplayEffect_Cooldown::UGASXGameplayEffect_Cooldown()
 	: Super()

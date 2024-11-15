@@ -2,7 +2,7 @@
 
 #include "GASXTargetType.h"
 #include "GASXBaseCharacter.h"
-#include "GASXGameplayAbility.h"
+#include "GameplayAbilities/GASXGameplayAbility.h"
 
 UObject* UGASXTargetType::GetWorldContextObjectFromActorInfo(FGameplayAbilityActorInfo ActorInfo) const
 {

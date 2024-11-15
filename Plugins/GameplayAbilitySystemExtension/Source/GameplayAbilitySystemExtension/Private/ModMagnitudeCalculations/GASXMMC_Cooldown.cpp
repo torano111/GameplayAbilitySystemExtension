@@ -1,7 +1,7 @@
 // Copyright 2024 Toranosuke Ichikawa
 
-#include "GASXMMC_Cooldown.h"
-#include "GASXGameplayAbility.h"
+#include "ModMagnitudeCalculations/GASXMMC_Cooldown.h"
+#include "GameplayAbilities/GASXGameplayAbility.h"
 
 float UGASXMMC_Cooldown::CalculateBaseMagnitude_Implementation(const FGameplayEffectSpec& Spec) const
 {

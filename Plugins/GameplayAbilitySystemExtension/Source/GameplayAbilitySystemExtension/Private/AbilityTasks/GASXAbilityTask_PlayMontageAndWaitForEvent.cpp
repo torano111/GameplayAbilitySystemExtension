@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "GASXAbilityTask_PlayMontageAndWaitForEvent.h"
+#include "AbilityTasks/GASXAbilityTask_PlayMontageAndWaitForEvent.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"

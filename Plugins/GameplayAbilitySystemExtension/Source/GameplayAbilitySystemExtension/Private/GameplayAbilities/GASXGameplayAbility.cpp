@@ -1,12 +1,12 @@
 // Copyright 2024 Toranosuke Ichikawa
 
-#include "GASXGameplayAbility.h"
+#include "GameplayAbilities/GASXGameplayAbility.h"
 #include "GASXAbilitySystemComponent.h"
-#include "GASXAbilityCost.h"
+#include "AbilityCosts/GASXAbilityCost.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GASXTargetType.h"
 #include "GASXBaseCharacter.h"
-#include "GASXGameplayEffect_Cooldown.h"
+#include "GameplayEffects/GASXGameplayEffect_Cooldown.h"
 
 UGASXGameplayAbility::UGASXGameplayAbility()
 	: Super()

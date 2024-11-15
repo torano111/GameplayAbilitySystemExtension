@@ -1,8 +1,8 @@
 // Copyright 2024 Toranosuke Ichikawa
 
-#include "GASXAbilityCost_AttributeCost.h"
+#include "AbilityCosts/GASXAbilityCost_AttributeCost.h"
 #include "AbilitySystemComponent.h"
-#include "GASXGameplayAbility.h"
+#include "GameplayAbilities/GASXGameplayAbility.h"
 #include "AbilitySystemGlobals.h"
 
 bool UGASXAbilityCost_AttributeCost::CheckCost(const UGASXGameplayAbility* Ability, const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, FGameplayTagContainer* OptionalRelevantTags) const

@@ -3,7 +3,7 @@
 #include "MyBaseCharacter.h"
 #include "MyPlayerState.h"
 #include "GASXAbilitySystemComponent.h"
-#include "GASXGameplayAbility.h"
+#include "GameplayAbilities/GASXGameplayAbility.h"
 
 AMyBaseCharacter::AMyBaseCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
