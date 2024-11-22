@@ -2,6 +2,19 @@
 
 #include "GASXLibrary.h"
 #include "GASXDataTypes.h"
+#include "GASXTargetType.h"
+
+////////////////////
+///// Target Type
+
+void UGASXLibrary::GetTargetTypeTargets(TSubclassOf<class UGASXTargetType> TargetType, FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors)
+{
+	const UGASXTargetType* TargetTypeCDO = TargetType.GetDefaultObject();
+	TargetTypeCDO->GetTargets(ActorInfo, EventData, OutHitResults, OutActors);
+}
+
+////////////////////
+///// Effect Container
 
 bool UGASXLibrary::DoesEffectContainerSpecHaveEffects(const FGASXGameplayEffectContainerSpec& ContainerSpec)
 {
@@ -37,4 +50,12 @@ TArray<FActiveGameplayEffectHandle> UGASXLibrary::ApplyExternalEffectContainerSp
 		}
 	}
 	return AllEffects;
+}
+
+////////////////////
+///// Misc.
+
+void UGASXLibrary::ClearTargetData(UPARAM(ref)FGameplayAbilityTargetDataHandle& InOutTargetData)
+{
+	InOutTargetData.Clear();
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
+#include "Abilities/GameplayAbilityTypes.h"
 #include "GASXLibrary.generated.h"
 
 struct FGASXGameplayEffectContainerSpec;
@@ -18,6 +19,15 @@ class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXLibrary : public UBlueprintFunctio
 	GENERATED_BODY()
 	
 public:
+	////////////////////
+	///// Target Type
+
+	UFUNCTION(BlueprintCallable, Category = Ability)
+	static void GetTargetTypeTargets(TSubclassOf<class UGASXTargetType> TargetType, FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors);
+
+	////////////////////
+	///// Effect Container
+
 	/** Checks if spec has any effects */
 	UFUNCTION(BlueprintPure, Category = Ability)
 	static bool DoesEffectContainerSpecHaveEffects(const FGASXGameplayEffectContainerSpec& ContainerSpec);
@@ -33,4 +43,11 @@ public:
 	/** Applies container spec that was made from an ability */
 	UFUNCTION(BlueprintCallable, Category = Ability)
 	static TArray<FActiveGameplayEffectHandle> ApplyExternalEffectContainerSpec(const FGASXGameplayEffectContainerSpec& ContainerSpec);
+
+
+	////////////////////
+	///// Misc.
+
+	UFUNCTION(BlueprintCallable, Category = "Ability|TargetData")
+	static void ClearTargetData(UPARAM(ref) FGameplayAbilityTargetDataHandle& InOutTargetData);
 };
