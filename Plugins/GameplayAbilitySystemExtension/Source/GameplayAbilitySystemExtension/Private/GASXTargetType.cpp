@@ -129,7 +129,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						WorldContextObject,
 						Start,
 						End,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -187,7 +187,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						WorldContextObject,
 						Start,
 						End,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -250,7 +250,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						Start,
 						End,
 						TraceRadius,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -311,7 +311,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						Start,
 						End,
 						TraceRadius,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -377,7 +377,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						End,
 						TraceRadius,
 						CapsuleTraceHalfHeight,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -441,7 +441,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						End,
 						TraceRadius,
 						CapsuleTraceHalfHeight,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -508,7 +508,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						End,
 						BoxTraceHalfSize,
 						BoxTraceOrientation,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -572,7 +572,7 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 						End,
 						BoxTraceHalfSize,
 						BoxTraceOrientation,
-						ProfileName,
+						ProfileName.Name,
 						bTraceComplex,
 						ActorsToIgnore,
 						DrawDebugType,
@@ -618,26 +618,6 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 		}
 	}
 }
-
-#if WITH_EDITOR
-TArray<FName> UGASXTargetType_TraceBase::GetCollisionProfileNames()
-{
-	TArray<TSharedPtr<FName>> SharedNames;
-	UCollisionProfile::GetProfileNames(SharedNames);
-
-	TArray<FName> Names;
-	Names.Reserve(SharedNames.Num());
-	for (const TSharedPtr<FName>& SharedName : SharedNames)
-	{
-		if (const FName* Name = SharedName.Get())
-		{
-			Names.Add(*Name);
-		}
-	}
-
-	return Names;
-}
-#endif
 
 void UGASXTargetType_TraceFromAvatarActor::GetTraceStartAndEnd_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, FVector& OutStart, FVector& OutEnd) const
 {

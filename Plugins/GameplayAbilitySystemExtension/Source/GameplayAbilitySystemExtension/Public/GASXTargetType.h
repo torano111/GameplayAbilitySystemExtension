@@ -128,8 +128,8 @@ public:
 	TEnumAsByte<ETraceTypeQuery> TraceChannel = ETraceTypeQuery::TraceTypeQuery1;
 
 	// used for trace if TraceTargetType is set to TTT_ByProfile
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|TargetSettings", meta = (GetOptions = "GetCollisionProfileNames", EditCondition = "TraceTargetType == EGASXTraceTargetType::TTT_ByProfile"))
-	FName ProfileName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|TargetSettings", meta = (EditCondition = "TraceTargetType == EGASXTraceTargetType::TTT_ByProfile"))
+	FCollisionProfileName ProfileName;
 
 	// used for trace if TraceTargetType is set to TTT_ByObjectTypes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Trace|TargetSettings", meta = (EditCondition = "TraceTargetType == EGASXTraceTargetType::TTT_ByObjectTypes"))
@@ -204,11 +204,6 @@ public:
 
 	/** Uses the passed in event data */
 	virtual void GetTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors) const override;
-
-#if WITH_EDITOR
-	UFUNCTION()
-	static TArray<FName> GetCollisionProfileNames();
-#endif
 };
 
 /** Trivial target type that pulls targets with a sphere trace from avatar actor to actor forward. */
