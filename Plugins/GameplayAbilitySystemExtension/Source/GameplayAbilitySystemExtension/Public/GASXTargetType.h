@@ -7,6 +7,7 @@
 #include "Abilities/GameplayAbilityTypes.h"
 #include "GASXDataTypes.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "GASXTargetType.generated.h"
 
 class AGASXBaseCharacter;
@@ -46,6 +47,14 @@ enum class EGASXTraceHitType : uint8
 	THT_MultiTrace		UMETA(DisplayName = "Multi")
 };
 
+UENUM(BlueprintType)
+enum class EFilterActorType : uint8
+{
+	FAT_None            UMETA(DisplayName = "None"),
+	FAT_OwnerActor		UMETA(DisplayName = "OwnerActor"),
+	FAT_AvatarActor		UMETA(DisplayName = "AvatarActor")
+};
+
 /**
  * Class that is used to determine targeting for abilities
  * It is meant to be blueprinted to run target logic
@@ -57,6 +66,19 @@ UCLASS(Abstract, Blueprintable, meta = (ShowWorldContextPin))
 class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXTargetType : public UObject
 {
 	GENERATED_BODY()
+
+public:
+	// Filter for GetTargets()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Filter")
+	FGameplayTargetDataFilter Filter;
+
+	// Determins FilterActor parameter for Filter
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Filter")
+	EFilterActorType FilterActorType = EFilterActorType::FAT_AvatarActor;
+
+	// If true, OutHitResults parameter in GetTargets() will be filtered as well as OutActors.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXTargetType|Filter")
+	bool bFilterHitResults = true;
 	
 public:
 	// Constructor and overrides
@@ -64,6 +86,21 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "GASXTargetType")
 	UObject* GetWorldContextObjectFromActorInfo(FGameplayAbilityActorInfo ActorInfo) const;
+	
+	// Returns FilterActor for Filter depending on FilterActorType 
+	UFUNCTION(BlueprintNativeEvent, Category = "GASXTargetType|Filter")
+	AActor* GetFilterActor(FGameplayAbilityActorInfo ActorInfo) const;
+	virtual AActor* GetFilterActor_Implementation(FGameplayAbilityActorInfo ActorInfo) const;
+
+	// Make a filter handle from Filter. ActorInfo is used for FilterActor.
+	UFUNCTION(BlueprintNativeEvent, Category = "GASXTargetType|Filter")
+	FGameplayTargetDataFilterHandle MakeFilterHandle(FGameplayAbilityActorInfo ActorInfo) const;
+	virtual FGameplayTargetDataFilterHandle MakeFilterHandle_Implementation(FGameplayAbilityActorInfo ActorInfo) const;
+
+	// Filter targets using Filter.
+	UFUNCTION(BlueprintNativeEvent, Category = "GASXTargetType|Filter")
+	void FilterTargets(FGameplayAbilityActorInfo ActorInfo, UPARAM(ref) TArray<FHitResult>& InOutHitResults, UPARAM(ref) TArray<AActor*>& InOutActors) const;
+	virtual void FilterTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, TArray<FHitResult>& InOutHitResults, TArray<AActor*>& InOutActors) const;
 
 	/** Called to determine targets to apply gameplay effects to */
 	UFUNCTION(BlueprintNativeEvent, Category = "GASXTargetType")

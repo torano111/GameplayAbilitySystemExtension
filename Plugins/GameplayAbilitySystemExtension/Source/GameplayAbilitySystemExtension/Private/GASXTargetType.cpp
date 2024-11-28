@@ -4,10 +4,56 @@
 #include "GASXBaseCharacter.h"
 #include "GameplayAbilities/GASXGameplayAbility.h"
 
+////////////////////
+///// UGASXTargetType
+
 UObject* UGASXTargetType::GetWorldContextObjectFromActorInfo(FGameplayAbilityActorInfo ActorInfo) const
 {
 	check(ActorInfo.OwnerActor.IsValid());
 	return ActorInfo.OwnerActor->GetWorld();
+}
+
+AActor* UGASXTargetType::GetFilterActor_Implementation(FGameplayAbilityActorInfo ActorInfo) const
+{
+	switch (FilterActorType)
+	{
+	case EFilterActorType::FAT_OwnerActor:
+		return ActorInfo.OwnerActor.Get();
+	case EFilterActorType::FAT_AvatarActor:
+		return ActorInfo.AvatarActor.Get();
+	case EFilterActorType::FAT_None:
+	default:
+		return nullptr;
+	}
+}
+
+FGameplayTargetDataFilterHandle UGASXTargetType::MakeFilterHandle_Implementation(FGameplayAbilityActorInfo ActorInfo) const
+{
+	FGameplayTargetDataFilterHandle FilterHandle;
+	FGameplayTargetDataFilter* NewFilter = new FGameplayTargetDataFilter(Filter);
+	NewFilter->InitializeFilterContext(GetFilterActor(ActorInfo));
+	FilterHandle.Filter = TSharedPtr<FGameplayTargetDataFilter>(NewFilter);
+	return FilterHandle;
+}
+
+void UGASXTargetType::FilterTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, TArray<FHitResult>& InOutHitResults, TArray<AActor*>& InOutActors) const
+{
+	FGameplayTargetDataFilterHandle FilterHandle = MakeFilterHandle(ActorInfo);
+
+	InOutActors.RemoveAll([&FilterHandle](const AActor* Actor) {
+		return !FilterHandle.FilterPassesForActor(Actor);
+		});
+
+	if (bFilterHitResults)
+	{
+		InOutHitResults.RemoveAll([&FilterHandle](const FHitResult& HitResult) {
+			if (AActor* HitActor = HitResult.GetActor())
+			{
+				return !FilterHandle.FilterPassesForActor(HitActor);
+			}
+			return true; // removes if the actor is invalid
+			});
+	}
 }
 
 void UGASXTargetType::GetTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors) const
@@ -15,15 +61,28 @@ void UGASXTargetType::GetTargets_Implementation(FGameplayAbilityActorInfo ActorI
 	return;
 }
 
+////////////////////
+///// UGASXTargetType_UseOwner
+
 void UGASXTargetType_UseOwner::GetTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors) const
 {
 	if (ActorInfo.OwnerActor.IsValid()) OutActors.Add(ActorInfo.OwnerActor.Get());
+
+	FilterTargets(ActorInfo, OutHitResults, OutActors);
 }
+
+////////////////////
+///// UGASXTargetType_UseAvatar
 
 void UGASXTargetType_UseAvatar::GetTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors) const
 {
 	if (ActorInfo.AvatarActor.IsValid()) OutActors.Add(ActorInfo.AvatarActor.Get());
+
+	FilterTargets(ActorInfo, OutHitResults, OutActors);
 }
+
+////////////////////
+///// UGASXTargetType_UseEventData
 
 void UGASXTargetType_UseEventData::GetTargets_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors) const
 {
@@ -36,7 +95,12 @@ void UGASXTargetType_UseEventData::GetTargets_Implementation(FGameplayAbilityAct
 	{
 		OutActors.Add(const_cast<AActor*>(EventData.Target.Get()));
 	}
+
+	FilterTargets(ActorInfo, OutHitResults, OutActors);
 }
+
+////////////////////
+///// UGASXTargetType_TraceBase
 
 UObject* UGASXTargetType_TraceBase::GetSceneObject(FGameplayAbilityActorInfo ActorInfo) const
 {
@@ -617,7 +681,12 @@ void UGASXTargetType_TraceBase::GetTargets_Implementation(FGameplayAbilityActorI
 			OutHitResults.Empty();
 		}
 	}
+
+	FilterTargets(ActorInfo, OutHitResults, OutActors);
 }
+
+////////////////////
+///// UGASXTargetType_TraceFromAvatarActor
 
 void UGASXTargetType_TraceFromAvatarActor::GetTraceStartAndEnd_Implementation(FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, FVector& OutStart, FVector& OutEnd) const
 {
