@@ -7,22 +7,22 @@
 #include "GASXTargetType.h"
 #include "GASXBaseCharacter.h"
 #include "GameplayEffects/GASXGameplayEffect_Cooldown.h"
+#include "AbilitySystemGlobals.h"
 
 UGASXGameplayAbility::UGASXGameplayAbility()
 	: Super()
 {
 	// Default to Instance Per Actor
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
+	ActivationPolicy = EGASXAbilityActivationPolicy::OnInputTriggered;
 }
 
 void UGASXGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-	if (bActivateAbilityOnGranted)
-	{
-		ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle, false);
-	}
+	TryActivateAbilityOnSpawn(ActorInfo, Spec);
 }
 
 bool UGASXGameplayAbility::CheckCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, OUT FGameplayTagContainer* OptionalRelevantTags) const
@@ -124,9 +124,108 @@ void UGASXGameplayAbility::ApplyCooldown(const FGameplayAbilitySpecHandle Handle
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(CooldownGE->GetClass(), GetAbilityLevel());
 		if (IsUsingGASXCooldownGEClass()) SpecHandle.Data.Get()->DynamicGrantedTags.AppendTags(CooldownTags);	// Pass cooldown tags to GE.
 		// we don't pass CooldownDuration to GE, because UGASXGameplayEffect_Cooldown uses UGASXGameplayEffect_Cooldown which returns this class's CooldownDuration as base magnitude.
-		
+
 		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 	}
+}
+
+bool UGASXGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, OUT FGameplayTagContainer* OptionalRelevantTags) const
+{
+	bool bBlocked = false;
+	bool bMissing = false;
+
+	UAbilitySystemGlobals& AbilitySystemGlobals = UAbilitySystemGlobals::Get();
+	const FGameplayTag& BlockedTag = AbilitySystemGlobals.ActivateFailTagsBlockedTag;
+	const FGameplayTag& MissingTag = AbilitySystemGlobals.ActivateFailTagsMissingTag;
+
+	// Check if any of this ability's tags are currently blocked
+	if (AbilitySystemComponent.AreAbilityTagsBlocked(AbilityTags))
+	{
+		bBlocked = true;
+	}
+
+	const UGASXAbilitySystemComponent* ASC = Cast<UGASXAbilitySystemComponent>(&AbilitySystemComponent);
+	static FGameplayTagContainer AllRequiredTags;
+	static FGameplayTagContainer AllBlockedTags;
+
+	AllRequiredTags = ActivationRequiredTags;
+	AllBlockedTags = ActivationBlockedTags;
+
+	// Expand our ability tags to add additional required/blocked tags
+	if (ASC)
+	{
+		ASC->GetAdditionalActivationTagRequirements(AbilityTags, AllRequiredTags, AllBlockedTags);
+	}
+
+	// Check to see the required/blocked tags for this ability
+	if (AllBlockedTags.Num() || AllRequiredTags.Num())
+	{
+		static FGameplayTagContainer AbilitySystemComponentTags;
+
+		AbilitySystemComponentTags.Reset();
+		AbilitySystemComponent.GetOwnedGameplayTags(AbilitySystemComponentTags);
+
+		if (AbilitySystemComponentTags.HasAny(AllBlockedTags))
+		{
+			bBlocked = true;
+		}
+
+		if (!AbilitySystemComponentTags.HasAll(AllRequiredTags))
+		{
+			bMissing = true;
+		}
+	}
+
+	if (SourceTags != nullptr)
+	{
+		if (SourceBlockedTags.Num() || SourceRequiredTags.Num())
+		{
+			if (SourceTags->HasAny(SourceBlockedTags))
+			{
+				bBlocked = true;
+			}
+
+			if (!SourceTags->HasAll(SourceRequiredTags))
+			{
+				bMissing = true;
+			}
+		}
+	}
+
+	if (TargetTags != nullptr)
+	{
+		if (TargetBlockedTags.Num() || TargetRequiredTags.Num())
+		{
+			if (TargetTags->HasAny(TargetBlockedTags))
+			{
+				bBlocked = true;
+			}
+
+			if (!TargetTags->HasAll(TargetRequiredTags))
+			{
+				bMissing = true;
+			}
+		}
+	}
+
+	if (bBlocked)
+	{
+		if (OptionalRelevantTags && BlockedTag.IsValid())
+		{
+			OptionalRelevantTags->AddTag(BlockedTag);
+		}
+		return false;
+	}
+	if (bMissing)
+	{
+		if (OptionalRelevantTags && MissingTag.IsValid())
+		{
+			OptionalRelevantTags->AddTag(MissingTag);
+		}
+		return false;
+	}
+
+	return true;
 }
 
 bool UGASXGameplayAbility::IsUsingGASXCooldownGEClass() const
@@ -191,4 +290,20 @@ TArray<FActiveGameplayEffectHandle> UGASXGameplayAbility::ApplyEffectContainer(F
 {
 	FGASXGameplayEffectContainerSpec Spec = MakeEffectContainerSpec(ContainerTag, EventData, OverrideGameplayLevel);
 	return ApplyEffectContainerSpec(Spec);
+}
+
+void UGASXGameplayAbility::TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const
+{
+	// Try to activate if activation policy is on spawn.
+	if (ActorInfo && !Spec.IsActive() && (ActivationPolicy == EGASXAbilityActivationPolicy::OnSpawn))
+	{
+		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+		const AActor* AvatarActor = ActorInfo->AvatarActor.Get();
+
+		// If avatar actor is torn off or about to die, don't try to activate until we get the new one.
+		if (ASC && AvatarActor && !AvatarActor->GetTearOff() && (AvatarActor->GetLifeSpan() <= 0.0f))
+		{
+			ASC->TryActivateAbility(Spec.Handle);
+		}
+	}
 }

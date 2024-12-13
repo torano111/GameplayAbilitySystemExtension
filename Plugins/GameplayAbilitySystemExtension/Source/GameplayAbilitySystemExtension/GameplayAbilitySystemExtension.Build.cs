@@ -28,7 +28,8 @@ public class GameplayAbilitySystemExtension : ModuleRules
 				"Core",
                 "GameplayAbilities",
 				"GameplayTags",
-				"GameplayTasks"
+				"GameplayTasks",
+				"EnhancedInput"
             }
 			);
 			

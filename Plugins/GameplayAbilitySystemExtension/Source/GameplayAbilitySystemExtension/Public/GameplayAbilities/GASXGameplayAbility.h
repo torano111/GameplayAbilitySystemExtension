@@ -8,6 +8,24 @@
 #include "GASXGameplayAbility.generated.h"
 
 /**
+ * EGASXAbilityActivationPolicy
+ *
+ *	Defines how an ability is meant to activate.
+ */
+UENUM(BlueprintType)
+enum class EGASXAbilityActivationPolicy : uint8
+{
+	// Try to activate the ability when the input is triggered.
+	OnInputTriggered,
+
+	// Continually try to activate the ability while the input is active.
+	WhileInputActive,
+
+	// Try to activate the ability when an avatar is assigned. Use this for a pssive ability.
+	OnSpawn
+};
+
+/**
  * Base GameplayAbility
  */
 UCLASS(Abstract)
@@ -16,10 +34,6 @@ class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXGameplayAbility : public UGameplay
 	GENERATED_BODY()
 	
 public:
-	// Activates this ability immediately when granted. Used for passive abilities.
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Ability")
-	bool bActivateAbilityOnGranted = false;
-
 	/** Map of gameplay tags to gameplay effect containers */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = GameplayEffects)
 	TMap<FGameplayTag, FGASXGameplayEffectContainer> EffectContainerMap;
@@ -42,6 +56,10 @@ protected:
 	UPROPERTY(Transient)
 	FGameplayTagContainer UnitedCooldownTags;
 
+	// Defines how this ability is meant to activate.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability")
+	EGASXAbilityActivationPolicy ActivationPolicy;
+
 
 public:
 	UGASXGameplayAbility();
@@ -52,6 +70,7 @@ public:
 	virtual void ApplyCost(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override;
 	virtual const FGameplayTagContainer* GetCooldownTags() const override; /** Returns all tags that can put this ability into cooldown */
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override; /** Applies CooldownGameplayEffect to the target */
+	virtual bool DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	// End of UGameplayAbility interface
 
 	// Checks if CooldownGameplayEffectClass is a child class of UGASXGameplayEffect_Cooldown
@@ -73,4 +92,9 @@ public:
 	/** Applies a gameplay effect container, by creating and then applying the spec. This also runs targeting logic if the matched effect container has a target type.*/
 	UFUNCTION(BlueprintCallable, Category = Ability, meta = (AutoCreateRefTerm = "EventData"))
 	virtual TArray<FActiveGameplayEffectHandle> ApplyEffectContainer(FGameplayTag ContainerTag, const FGameplayEventData& EventData, int32 OverrideGameplayLevel = -1);
+
+	UFUNCTION(BlueprintPure, Category = Ability)
+	EGASXAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
+
+	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
 };

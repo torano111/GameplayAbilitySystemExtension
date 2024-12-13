@@ -7,6 +7,9 @@
 #include "AbilitySystemInterface.h"
 #include "GASXBaseCharacter.generated.h"
 
+class UGASXPawnData;
+struct FGameplayTag;
+
 /**
  * Character base for GameplayAbilitySystemExtension plugin.
  */
@@ -22,6 +25,24 @@ public:
 
 protected:
 	TWeakObjectPtr<class UGASXAbilitySystemComponent> AbilitySystemComponent;
+
+	/** Pawn data used to create the pawn. Specified from a spawn function or on a placed instance. */
+	UPROPERTY(EditDefaultsOnly, Category = "GASXBaseCharacter")
+	TObjectPtr<UGASXPawnData> PawnData;
+
+	///**
+	// * Input Configs that should be added to this player when initializing the input. These configs
+	// * will NOT be registered with the settings because they are added at runtime. If you want the config
+	// * pair to be in the settings, then add it via the GameFeatureAction_AddInputConfig
+	// *
+	// * NOTE: You should only add to this if you do not have a game feature plugin accessible to you.
+	// * If you do, then use the GameFeatureAction_AddInputConfig instead.
+	// */
+	//UPROPERTY(EditAnywhere, Category = "GASXBaseCharacter|Input")
+	//TArray<FInputMappingContextAndPriority> DefaultInputMappings;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASXBaseCharacter|Input")
+	class UInputMappingContext* DefaultInputMappingContext = nullptr;
 
 public:
 	AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
@@ -41,6 +62,13 @@ public:
 	// Only called on the Server. Calls before Server's AcknowledgePossession.
 	virtual void PossessedBy(AController* NewController) override;
 
+	UFUNCTION(BlueprintPure, Category="GASXBaseCharacter")
+	const UGASXPawnData* GetPawnData() const { return PawnData; }
+
+	UFUNCTION(BlueprintCallable, Category = "GASXBaseCharacter")
+	// New data can be set if the current PawnData is nullptr. Return true if new data is set.
+	bool SetPawnData(UGASXPawnData* InPawnData);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -48,4 +76,14 @@ protected:
 	// Place to initialize GAS things, such as ASC, attributes, startup effects and abilities etc.
 	// This should be called in PossessedBy for hero characters, and in BeginPlay for AI controlled characters. NewPlayerState can be nullptr for AI controlled characters.
 	virtual void InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* InAvatarActor, class AGASXPlayerState* NewPlayerState = nullptr);
+
+	virtual void InitializePlayerInput();
+
+	// Event to bind native actions to their corresponding tags. Use UGASXInputComponent's Bind Native Action node to bind native actions in BP graph.
+	UFUNCTION(BlueprintNativeEvent, Category = "GASXBaseCharacter")
+	void BindNativeActions(class UGASXInputComponent* IC, const class UGASXInputConfig* InputConfig);
+	virtual void BindNativeActions_Implementation(class UGASXInputComponent* IC, const class UGASXInputConfig* InputConfig);
+
+	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 };
