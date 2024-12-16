@@ -15,23 +15,23 @@ struct GAMEPLAYABILITYSYSTEMEXTENSION_API FAbilityTagRelationship
 {
 	GENERATED_BODY()
 
-	/** The tag that this container relationship is about. Single tag, but abilities can have multiple of these */
+	// If an ability has this tag as one of AbilityTags, then CancelAbilitiesWithTag, BlockAbilitiesWithTag, ActivationRequiredTags and ActivationBlockedTags will be added to it.
 	UPROPERTY(EditAnywhere, Category = Ability, meta = (Categories = "Gameplay.Action"))
 	FGameplayTag AbilityTag;
 
-	/** The other ability tags that will be blocked by any ability using this tag */
+	// Abilities with these tags are cancelled when the ability with AbilityTag is executed
 	UPROPERTY(EditAnywhere, Category = Ability)
-	FGameplayTagContainer AbilityTagsToBlock;
+	FGameplayTagContainer CancelAbilitiesWithTag;
 
-	/** The other ability tags that will be canceled by any ability using this tag */
+	// Abilities with these tags are blocked while the ability with AbilityTag is active
 	UPROPERTY(EditAnywhere, Category = Ability)
-	FGameplayTagContainer AbilityTagsToCancel;
+	FGameplayTagContainer BlockAbilitiesWithTag;
 
-	/** If an ability has the tag, this is implicitly added to the activation required tags of the ability */
+	// The ability with AbilityTag can only be activated if the activating actor/component has all of these tags
 	UPROPERTY(EditAnywhere, Category = Ability)
 	FGameplayTagContainer ActivationRequiredTags;
 
-	/** If an ability has the tag, this is implicitly added to the activation blocked tags of the ability */
+	// The ability with AbilityTag is blocked if the activating actor/component has any of these tags.
 	UPROPERTY(EditAnywhere, Category = Ability)
 	FGameplayTagContainer ActivationBlockedTags;
 };

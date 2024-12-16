@@ -12,11 +12,11 @@ void UGASXAbilityTagRelationshipMap::GetAbilityTagsToBlockAndCancel(const FGamep
 		{
 			if (OutTagsToBlock)
 			{
-				OutTagsToBlock->AppendTags(Tags.AbilityTagsToBlock);
+				OutTagsToBlock->AppendTags(Tags.BlockAbilitiesWithTag);
 			}
 			if (OutTagsToCancel)
 			{
-				OutTagsToCancel->AppendTags(Tags.AbilityTagsToCancel);
+				OutTagsToCancel->AppendTags(Tags.CancelAbilitiesWithTag);
 			}
 		}
 	}
@@ -49,7 +49,7 @@ bool UGASXAbilityTagRelationshipMap::IsAbilityCancelledByTag(const FGameplayTagC
 	{
 		const FAbilityTagRelationship& Tags = AbilityTagRelationships[i];
 
-		if (Tags.AbilityTag == ActionTag && Tags.AbilityTagsToCancel.HasAny(AbilityTags))
+		if (Tags.AbilityTag == ActionTag && Tags.CancelAbilitiesWithTag.HasAny(AbilityTags))
 		{
 			return true;
 		}
