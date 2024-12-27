@@ -71,6 +71,8 @@ public:
 	virtual const FGameplayTagContainer* GetCooldownTags() const override; /** Returns all tags that can put this ability into cooldown */
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const override; /** Applies CooldownGameplayEffect to the target */
 	virtual bool DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 	// End of UGameplayAbility interface
 
 	// Checks if CooldownGameplayEffectClass is a child class of UGASXGameplayEffect_Cooldown
@@ -97,4 +99,11 @@ public:
 	EGASXAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 
 	void TryActivateAbilityOnSpawn(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) const;
+
+protected:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Ability, meta = (DisplayName = "On Input Pressed"))
+	void InputPressed_BP();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Ability, meta = (DisplayName = "On Input Released"))
+	void InputReleased_BP();
 };

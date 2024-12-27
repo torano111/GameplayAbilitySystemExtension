@@ -29,6 +29,8 @@ UGA_Passive_FindInteractableBase::UGA_Passive_FindInteractableBase()
 
 void UGA_Passive_FindInteractableBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* OwnerInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	Super::ActivateAbility(Handle, OwnerInfo, ActivationInfo, TriggerEventData);
+
 	auto ASC = OwnerInfo->AbilitySystemComponent.Get();
 	if (ASC)
 	{
@@ -165,6 +167,8 @@ void UGA_Passive_FindInteractableBase::CancelWaiting(bool bCancelOngoingInteract
 
 void UGA_Passive_FindInteractableBase::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
+	Super::InputPressed(Handle, ActorInfo, ActivationInfo);
+
 	if (!bIsInteractionBlocked && !bIsInteracting && IsTargetDataValid(CurrentTargetData) && ActorInfo != NULL && ActorInfo->AvatarActor != NULL)
 	{
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
@@ -191,6 +195,8 @@ void UGA_Passive_FindInteractableBase::InputPressed(const FGameplayAbilitySpecHa
 
 void UGA_Passive_FindInteractableBase::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
+
 	EndInteraction(true);
 }
 

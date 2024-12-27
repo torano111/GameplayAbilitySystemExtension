@@ -228,6 +228,16 @@ bool UGASXGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbilitySyste
 	return true;
 }
 
+void UGASXGameplayAbility::InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	InputPressed_BP();
+}
+
+void UGASXGameplayAbility::InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	InputReleased_BP();
+}
+
 bool UGASXGameplayAbility::IsUsingGASXCooldownGEClass() const
 {
 	return CooldownGameplayEffectClass && CooldownGameplayEffectClass->IsChildOf(UGASXGameplayEffect_Cooldown::StaticClass());
