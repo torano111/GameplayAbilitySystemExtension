@@ -3,6 +3,34 @@
 #include "GASXLibrary.h"
 #include "GASXDataTypes.h"
 #include "GASXTargetType.h"
+#include "AbilitySystemComponent.h"
+#include "Interfaces/GASXInteractable.h"
+#include "AbilitySystemBlueprintLibrary.h"
+
+////////////////////
+///// UAbilitySystemComponent
+
+FGameplayAbilitySpecHandle UGASXLibrary::GiveAbilityAndActivateOnceWithGameplayEvent(UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayAbility> AbilityClass, FGameplayEventData Payload, int32 Level, int32 InputID)
+{
+	if (TargetASC)
+	{
+		// build and validate the ability spec
+		FGameplayAbilitySpec AbilitySpec = TargetASC->BuildAbilitySpecFromClass(AbilityClass, Level, InputID);
+
+		// validate the class
+		if (!IsValid(AbilitySpec.Ability))
+		{
+			UE_LOG(LogTemp, Error, TEXT("K2_GiveAbilityAndActivateOnce() called with an invalid Ability Class."));
+
+			return FGameplayAbilitySpecHandle();
+		}
+
+		return TargetASC->GiveAbilityAndActivateOnce(AbilitySpec, &Payload);
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("GiveAbilityAndActivateOnceWithGameplayEvent() called, but TargetASC is nullptr."));
+	return FGameplayAbilitySpecHandle();
+}
 
 ////////////////////
 ///// Target Type
@@ -11,6 +39,25 @@ void UGASXLibrary::GetTargetTypeTargets(TSubclassOf<class UGASXTargetType> Targe
 {
 	const UGASXTargetType* TargetTypeCDO = TargetType.GetDefaultObject();
 	TargetTypeCDO->GetTargets(ActorInfo, EventData, OutHitResults, OutActors);
+}
+
+////////////////////
+///// Interaction
+
+bool UGASXLibrary::IsTargetDataValidForInteraction(const FGameplayAbilityTargetDataHandle& InTargetData, TArray<AActor*> IgnoreActors, bool bChecksAvailability)
+{
+	if (UAbilitySystemBlueprintLibrary::TargetDataHasHitResult(InTargetData, 0))
+	{
+		FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(InTargetData, 0);
+		AActor* HitActor = HitResult.GetActor();
+
+		return HitActor != nullptr
+			&& !IgnoreActors.Contains(HitActor)
+			&& HitResult.GetComponent() != nullptr
+			&& HitActor->GetClass()->ImplementsInterface(UGASXInteractable::StaticClass())
+			&& (!bChecksAvailability || IGASXInteractable::Execute_IsAvailableForInteraction(HitActor, HitResult.GetComponent()));
+	}
+	return false;
 }
 
 ////////////////////

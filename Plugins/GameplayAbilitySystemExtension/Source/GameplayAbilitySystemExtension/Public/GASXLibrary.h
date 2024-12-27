@@ -20,10 +20,22 @@ class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXLibrary : public UBlueprintFunctio
 	
 public:
 	////////////////////
+	///// UAbilitySystemComponent
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Gameplay Abilities")
+	static FGameplayAbilitySpecHandle GiveAbilityAndActivateOnceWithGameplayEvent(UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayAbility> AbilityClass, FGameplayEventData Payload, int32 Level = 0, int32 InputID = -1);
+
+	////////////////////
 	///// Target Type
 
 	UFUNCTION(BlueprintCallable, Category = Ability)
 	static void GetTargetTypeTargets(TSubclassOf<class UGASXTargetType> TargetType, FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors);
+	
+	////////////////////
+	///// Interaction
+
+	UFUNCTION(BlueprintCallable, Category = Ability)
+	static bool IsTargetDataValidForInteraction(const FGameplayAbilityTargetDataHandle& InTargetData, TArray<AActor*> IgnoreActors, bool bChecksAvailability = true);
 
 	////////////////////
 	///// Effect Container

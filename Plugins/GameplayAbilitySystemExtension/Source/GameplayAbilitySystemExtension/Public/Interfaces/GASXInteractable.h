@@ -64,7 +64,7 @@ public:
 	* @param Interactor The Actor interacting with this Actor. It will be the AvatarActor from a GameplayAbility.
 	* @param InteractableComponent UPrimitiveComponent in case an Actor has many separate interactable areas.
 	*/
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interactable")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASXInteractable")
 	void Interact(AActor* Interactor, UPrimitiveComponent* InteractableComponent);
 
 	/**
@@ -72,7 +72,7 @@ public:
 	* If 0, Interaction will be executed without holding the button (just pressing the button).
 	* @param InteractableComponent UPrimitiveComponent in case an Actor has many separate interactable areas.
 	*/
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interactable")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASXInteractable")
 	float GetInteractionDuration(UPrimitiveComponent* InteractableComponent) const;
 
 	/**
@@ -82,6 +82,17 @@ public:
 	* @param Interactor The Actor interacting with this Actor. It will be the AvatarActor from a GameplayAbility.
 	* @param InteractableComponent UPrimitiveComponent in case an Actor has many separate interactable areas.
 	*/
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interactable")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASXInteractable")
 	void CancelInteraction(AActor* Interactor, UPrimitiveComponent* InteractableComponent);
+
+	// If returned ability is valid, it will be activated once after executing PreInteract() or Interact() depending on ShouldActivateAbilityOnPreInteract(), then it will be removed.
+	// A gameplay event will be sent together. It includes (1) event tag, (2) avatar actor of the interactor ability as instigator, (3) target data including incteraction target actor(IGASXInteractable) and target component.
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASXInteractable")
+	TSubclassOf<class UGASXGameplayAbility> GetInteractionAbility();
+	virtual TSubclassOf<class UGASXGameplayAbility> GetInteractionAbility_Implementation() { return nullptr;  }
+
+	// If true, the interaction ability will be activated just after PreInteract(). If false, then just after Interact().
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GASXInteractable")
+	bool ShouldActivateAbilityOnPreInteract();
+	virtual bool ShouldActivateAbilityOnPreInteract_Implementation() { return false; }
 };

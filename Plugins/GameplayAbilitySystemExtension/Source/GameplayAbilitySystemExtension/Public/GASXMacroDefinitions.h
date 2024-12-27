@@ -1,0 +1,7 @@
+// Copyright 2024 Toranosuke Ichikawa
+
+#pragma once
+
+#include "Logging/LogMacros.h"
+
+GAMEPLAYABILITYSYSTEMEXTENSION_API DECLARE_LOG_CATEGORY_EXTERN(LogGASX, Log, All);
