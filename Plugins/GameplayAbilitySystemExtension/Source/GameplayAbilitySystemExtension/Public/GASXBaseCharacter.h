@@ -28,7 +28,7 @@ protected:
 
 	/** Pawn data used to create the pawn. Specified from a spawn function or on a placed instance. */
 	UPROPERTY(EditDefaultsOnly, Category = "GASXBaseCharacter")
-	TObjectPtr<UGASXPawnData> PawnData;
+	TObjectPtr<const UGASXPawnData> PawnData;
 
 	///**
 	// * Input Configs that should be added to this player when initializing the input. These configs
@@ -65,9 +65,9 @@ public:
 	UFUNCTION(BlueprintPure, Category="GASXBaseCharacter")
 	const UGASXPawnData* GetPawnData() const { return PawnData; }
 
-	UFUNCTION(BlueprintCallable, Category = "GASXBaseCharacter")
 	// New data can be set if the current PawnData is nullptr. Return true if new data is set.
-	bool SetPawnData(UGASXPawnData* InPawnData);
+	UFUNCTION(BlueprintCallable, Category = "GASXBaseCharacter")
+	bool SetPawnData(const UGASXPawnData* InPawnData);
 
 protected:
 	// Called when the game starts or when spawned

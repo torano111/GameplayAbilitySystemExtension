@@ -1,11 +1,16 @@
 // Copyright 2024 Toranosuke Ichikawa
 
 #include "GASXLibrary.h"
+#include "GASXMacroDefinitions.h"
 #include "GASXDataTypes.h"
 #include "GASXTargetType.h"
 #include "AbilitySystemComponent.h"
 #include "Interfaces/GASXInteractable.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Experience/GASXUserFacingExperienceDefinition.h"
+#include "Kismet/GameplayStatics.h"
+#include "Experience/GASXExperienceManagerComponent.h"
+#include "GameFramework/GameModeBase.h"
 
 ////////////////////
 ///// UAbilitySystemComponent
@@ -97,6 +102,36 @@ TArray<FActiveGameplayEffectHandle> UGASXLibrary::ApplyExternalEffectContainerSp
 		}
 	}
 	return AllEffects;
+}
+
+////////////////////
+///// Experience
+
+void UGASXLibrary::TravelToExperience(const UObject* WorldContextObject, UGASXUserFacingExperienceDefinition* UserFacingExperienceDefinition)
+{
+	if (GEngine)
+	{
+		UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+		if (World)
+		{
+			if (IsValid(UserFacingExperienceDefinition))
+			{
+				FString TravelURL = UserFacingExperienceDefinition->ConstructTravelURL();
+				UE_LOG(LogGASXExperience, Log, TEXT("UGASXLibrary::TravelToExperience: URL=%s"), *TravelURL);
+				World->ServerTravel(TravelURL);
+			}
+		}
+	}
+}
+
+UGASXExperienceManagerComponent* UGASXLibrary::GetExperienceManagerComponent(const UObject* WorldContextObject)
+{
+	UGASXExperienceManagerComponent* Component = nullptr;
+	if (auto GameMode = UGameplayStatics::GetGameMode(WorldContextObject))
+	{
+		Component = GameMode->FindComponentByClass<UGASXExperienceManagerComponent>();
+	}
+	return Component;
 }
 
 ////////////////////

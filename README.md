@@ -20,3 +20,10 @@ The project is developed with Unreal Engine 5.4
 - Use AGASXPlayerController and AGASXPlayerState, or their subclasses.
 - Subclass AGASXBaseCharacter for your character
 - Your GameplayAbilities must inherit from UGASXGameplayAbility
+
+## Experience
+Work in progress.
+- Add following types to Primary Asset Types to Scan in Project Settings: Map, GASXExperienceDefinition, GASXUserFacingExperienceDefinition, GASXExperienceActionSet
+- GASXGameMode, GASXWorldSettings, GASXPluginSettings.
+
+NOTE: Unlike Lyra, I dicided to use GASXExperienceDefinition DATA ASSETS, not default object of its subclasses.

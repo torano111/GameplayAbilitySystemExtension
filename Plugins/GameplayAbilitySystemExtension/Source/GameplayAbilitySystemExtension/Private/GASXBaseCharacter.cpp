@@ -19,7 +19,7 @@ AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializ
 	PawnData = nullptr;
 }
 
-bool AGASXBaseCharacter::SetPawnData(UGASXPawnData* InPawnData)
+bool AGASXBaseCharacter::SetPawnData(const UGASXPawnData* InPawnData)
 {
 	if (InPawnData)
 	{

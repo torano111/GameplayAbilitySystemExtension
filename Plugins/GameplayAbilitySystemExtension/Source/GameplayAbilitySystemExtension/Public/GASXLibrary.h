@@ -9,6 +9,8 @@
 #include "GASXLibrary.generated.h"
 
 struct FGASXGameplayEffectContainerSpec;
+class UGASXUserFacingExperienceDefinition;
+class UGASXExperienceManagerComponent;
 
 /**
  * 
@@ -55,7 +57,15 @@ public:
 	/** Applies container spec that was made from an ability */
 	UFUNCTION(BlueprintCallable, Category = Ability)
 	static TArray<FActiveGameplayEffectHandle> ApplyExternalEffectContainerSpec(const FGASXGameplayEffectContainerSpec& ContainerSpec);
+	
+	////////////////////
+	///// Experience
 
+	UFUNCTION(BlueprintCallable, Category = "Experience", meta = (WorldContext = "WorldContextObject"))
+	static void TravelToExperience(const UObject* WorldContextObject, UGASXUserFacingExperienceDefinition* UserFacingExperienceDefinition);
+
+	UFUNCTION(BlueprintPure, Category = "Experience", meta = (WorldContext = "WorldContextObject"))
+	static UGASXExperienceManagerComponent* GetExperienceManagerComponent(const UObject* WorldContextObject);
 
 	////////////////////
 	///// Misc.

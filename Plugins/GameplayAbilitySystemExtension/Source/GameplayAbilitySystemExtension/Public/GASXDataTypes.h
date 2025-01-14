@@ -59,3 +59,15 @@ public:
 
 	void ClearTargetData();
 };
+
+UENUM(BlueprintType)
+enum class EGASXExperienceLoadState : uint8
+{
+	Unloaded,
+	Loading,
+	LoadingGameFeatures,
+	LoadingChaosTestingDelay,
+	ExecutingActions,
+	Loaded,
+	Deactivating
+};

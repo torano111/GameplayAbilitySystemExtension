@@ -9,6 +9,8 @@
 #include "GASXPlayerState.generated.h"
 
 class UGASXAbilitySystemComponent;
+class UGASXExperienceDefinition;
+class UGASXPawnData;
 
 /**
  * PlayerState base for GameplayAbilitySystemExtension plugin.
@@ -24,12 +26,26 @@ protected:
 	UPROPERTY()
 	class UGASXAbilitySystemComponent* AbilitySystemComponent;
 
+	UPROPERTY()
+	TObjectPtr<const UGASXPawnData> PawnData;
+
 public:
 	AGASXPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	//~AActor interface
+	virtual void PostInitializeComponents() override;
+	//~End of AActor interface
+	
 	// IAbilitySystemInterface interface
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	// End of IAbilitySystemInterface interface
 
 	virtual class UGASXAbilitySystemComponent* GetGASXAbilitySystemComponent() const;
+
+	const UGASXPawnData* GetPawnData() const;
+
+	void SetPawnData(const UGASXPawnData* InPawnData);
+
+protected:
+	void OnExperienceLoaded(const UGASXExperienceDefinition* CurrentExperience);
 };
