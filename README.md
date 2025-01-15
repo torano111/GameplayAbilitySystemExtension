@@ -5,6 +5,11 @@ Unlike Lyra, which can be overly large and complex for small-scale projects, thi
 
 The project is developed with Unreal Engine 5.4
 
+# Content
+Plugins/GameplayAbilitySystemExtension: Core elements in this project. Copy this and dependencies to your project.
+Plugins/ModularGameplayActors: GameplayAbilitySystemExtension plugin depends on this.
+Other content like Source/ and Content/: Example and test content. You don't need these unless you want to see examples.
+
 # Features
 - **single-player projects only**: For multiplayer projects, why don't you just use Lyra?
 - InputAction-GameplayAbility binding system from Lyra (InputConfig and AbilitySet). There are also PawnData and AbilityTagRelationshipMapping.
@@ -24,6 +29,14 @@ The project is developed with Unreal Engine 5.4
 ## Experience
 Work in progress.
 - Add following types to Primary Asset Types to Scan in Project Settings: Map, GASXExperienceDefinition, GASXUserFacingExperienceDefinition, GASXExperienceActionSet
-- GASXGameMode, GASXWorldSettings, GASXPluginSettings.
+- Set GASXWorldSettings as Default World Settings Class.
+- GASXPluginSettings.
+- Use GASXGameMode or its subclass as your GameMode. 
+
+### Experience Precedence order (highest wins)
+- URL Options override: Used if you use GASXUserFacingExperienceDefinition to travel.
+- Command Line override
+- World Settings
+- Default experience from Project Settings (Gameplay Ability System Extension section)
 
 NOTE: Unlike Lyra, I dicided to use GASXExperienceDefinition DATA ASSETS, not default object of its subclasses.
