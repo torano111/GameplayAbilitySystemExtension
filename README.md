@@ -27,7 +27,6 @@ Other content like Source/ and Content/: Example and test content. You don't nee
 - Your GameplayAbilities must inherit from UGASXGameplayAbility
 
 ## Experience
-Work in progress.
 - Add following types to Primary Asset Types to Scan in Project Settings: Map, GASXExperienceDefinition, GASXUserFacingExperienceDefinition, GASXExperienceActionSet
 - Set GASXWorldSettings as Default World Settings Class.
 - GASXPluginSettings.
