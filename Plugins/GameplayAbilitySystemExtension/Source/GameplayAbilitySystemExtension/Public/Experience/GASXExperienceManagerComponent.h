@@ -14,7 +14,7 @@ namespace UE::GameFeatures { struct FResult; }
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGASXExperienceLoaded, const UGASXExperienceDefinition* /*Experience*/);
 
 /**
- *	This is a subclass of UGameStateComponent, loading experience based on UGASXExperienceDefinition.
+ *	An actor component to manage experience, such as loading it based on UGASXExperienceDefinition.
  */
 UCLASS()
 class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXExperienceManagerComponent : public UActorComponent
