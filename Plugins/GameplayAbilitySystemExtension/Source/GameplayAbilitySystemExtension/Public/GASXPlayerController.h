@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "ModularPlayerController.h"
 #include "GASXPlayerController.generated.h"
 
 /**
@@ -12,7 +13,7 @@
  *	The base player controller class used by this project.
  */
 UCLASS()
-class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXPlayerController : public APlayerController
+class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXPlayerController : public AModularPlayerController
 {
 	GENERATED_BODY()
 	

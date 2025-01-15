@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "ModularCharacter.h"
 #include "AbilitySystemInterface.h"
 #include "GASXBaseCharacter.generated.h"
 
@@ -14,7 +15,7 @@ struct FGameplayTag;
  * Character base for GameplayAbilitySystemExtension plugin.
  */
 UCLASS()
-class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXBaseCharacter : public ACharacter, public IAbilitySystemInterface
+class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXBaseCharacter : public AModularCharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 

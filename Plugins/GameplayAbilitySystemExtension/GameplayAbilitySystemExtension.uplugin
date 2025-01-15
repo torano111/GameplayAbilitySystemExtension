@@ -18,7 +18,7 @@
 		{
 			"Name": "GameplayAbilitySystemExtension",
 			"Type": "Runtime",
-			"LoadingPhase": "PreLoadingScreen"
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

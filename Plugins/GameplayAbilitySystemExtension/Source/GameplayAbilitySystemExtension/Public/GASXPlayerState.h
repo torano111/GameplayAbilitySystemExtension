@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "ModularPlayerState.h"
 #include "AbilitySystemInterface.h"
 #include "GASXDataTypes.h"
 #include "GASXPlayerState.generated.h"
@@ -18,7 +19,7 @@ class UGASXPawnData;
  * Currently, this plugin doesn't support multiplayer. Thus, ASC's replicate is disabled.
  */
 UCLASS()
-class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXPlayerState : public APlayerState, public IAbilitySystemInterface
+class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXPlayerState : public AModularPlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 	
