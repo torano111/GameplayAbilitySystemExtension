@@ -39,4 +39,4 @@ Work in progress.
 - World Settings
 - Default experience from Project Settings (Gameplay Ability System Extension section)
 
-NOTE: Unlike Lyra, I dicided to use GASXExperienceDefinition DATA ASSETS, not default object of its subclasses.
+NOTE: Unlike Lyra, You have to make GASXExperienceDefinitions as DATA ASSETs, not pure blueprint subclasses.
