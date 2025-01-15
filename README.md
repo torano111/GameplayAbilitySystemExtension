@@ -6,9 +6,11 @@ Unlike Lyra, which can be overly large and complex for small-scale projects, thi
 The project is developed with Unreal Engine 5.4
 
 # Content
-Plugins/GameplayAbilitySystemExtension: Core elements in this project. Copy this and dependencies to your project.
-Plugins/ModularGameplayActors: GameplayAbilitySystemExtension plugin depends on this.
-Other content like Source/ and Content/: Example and test content. You don't need these unless you want to see examples.
+`Plugins/GameplayAbilitySystemExtension`: Core elements in this project. Copy this and dependencies to your project.
+
+`Plugins/ModularGameplayActors`: GameplayAbilitySystemExtension plugin depends on this.
+
+`Other content like Source/ and Content/`: Example and test content. You don't need these unless you want to see examples.
 
 # Features
 - **single-player projects only**: For multiplayer projects, why don't you just use Lyra?
@@ -29,7 +31,6 @@ Other content like Source/ and Content/: Example and test content. You don't nee
 ## Experience
 - Add following types to Primary Asset Types to Scan in Project Settings: Map, GASXExperienceDefinition, GASXUserFacingExperienceDefinition, GASXExperienceActionSet
 - Set GASXWorldSettings as Default World Settings Class.
-- GASXPluginSettings.
 - Use GASXGameMode or its subclass as your GameMode. 
 
 ### Experience Precedence order (highest wins)
