@@ -40,6 +40,10 @@
 		{
 			"Name": "ConsoleVariables",
 			"Enabled": true
+		},
+		{
+			"Name": "GameFeatureExamples",
+			"Enabled": true
 		}
 	]
 }
