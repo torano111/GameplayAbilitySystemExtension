@@ -23,6 +23,9 @@ void AGASXGameMode::InitGame(const FString& MapName, const FString& Options, FSt
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
+	// Listen for the experience load to complete
+	ExperienceManagerComponent->CallOrRegister_OnExperienceLoaded(FOnGASXExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
+
 	// Wait for the next frame to give time to initialize startup settings
 	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ThisClass::HandleMatchAssignmentIfNotExpectingOne);
 }
@@ -47,6 +50,7 @@ APawn* AGASXGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* Ne
 	SpawnInfo.ObjectFlags |= RF_Transient;	// Never save the default player pawns into a map.
 	SpawnInfo.bDeferConstruction = true;
 
+	// Spawn default pawn and set PawnData
 	if (UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer))
 	{
 		if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
@@ -120,14 +124,6 @@ bool AGASXGameMode::ControllerCanRestart(AController* Controller)
 	}
 
 	return true;
-}
-
-void AGASXGameMode::InitGameState()
-{
-	Super::InitGameState();
-
-	// Listen for the experience load to complete
-	ExperienceManagerComponent->CallOrRegister_OnExperienceLoaded(FOnGASXExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
 }
 
 bool AGASXGameMode::UpdatePlayerStartSpot(AController* Player, const FString& Portal, FString& OutErrorMessage)

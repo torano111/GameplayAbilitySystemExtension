@@ -49,7 +49,6 @@ public:
 	//virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	//virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 	virtual bool PlayerCanRestart_Implementation(APlayerController* Player) override;
-	virtual void InitGameState() override;
 	virtual bool UpdatePlayerStartSpot(AController* Player, const FString& Portal, FString& OutErrorMessage) override;
 	virtual void GenericPlayerInitialization(AController* NewPlayer) override;
 	virtual void FailedToRestartPlayer(AController* NewPlayer) override;
