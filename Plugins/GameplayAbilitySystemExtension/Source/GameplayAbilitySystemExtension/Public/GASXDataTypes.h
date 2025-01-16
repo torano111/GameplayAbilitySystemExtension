@@ -6,6 +6,8 @@
 #include "Abilities/GameplayAbilityTargetTypes.h"
 #include "GASXDataTypes.generated.h"
 
+class UInputMappingContext;
+
 /**
  * Struct defining a list of gameplay effects, a tag, and targeting info
  * These containers are defined statically in blueprints or assets and then turn into Specs at runtime
@@ -70,4 +72,21 @@ enum class EGASXExperienceLoadState : uint8
 	ExecutingActions,
 	Loaded,
 	Deactivating
+};
+
+USTRUCT()
+struct FInputMappingContextAndPriority
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Input", meta = (AssetBundles = "Client,Server"))
+	TSoftObjectPtr<UInputMappingContext> InputMapping;
+
+	// Higher priority input mappings will be prioritized over mappings with a lower priority.
+	UPROPERTY(EditAnywhere, Category = "Input")
+	int32 Priority = 0;
+
+	/** If true, then this mapping context will be registered with the settings when this game feature action is registered. */
+	UPROPERTY(EditAnywhere, Category = "Input")
+	bool bRegisterWithSettings = true;
 };

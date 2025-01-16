@@ -7,6 +7,11 @@
 #include "DataAssets/GASXPawnData.h"
 #include "DataAssets/GASXAbilitySet.h"
 #include "GASXInputComponent.h"
+#include "Components/GameFrameworkComponentManager.h"
+#include "GASXExtensionEvents.h"
+#include "GASXDataTypes.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
+#include "InputMappingContext.h"
 
 // Sets default values
 AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -83,26 +88,24 @@ void AGASXBaseCharacter::InitializePlayerInput()
 	{
 		if (const UGASXInputConfig* InputConfig = PawnData->InputConfig)
 		{
-			// TODO use TArray<FInputMappingContextAndPriority> DefaultInputMappings, instead of UInputMappingContext* DefaultInputMappingContext, so that it can be set by game feature actions
-			if (DefaultInputMappingContext) Subsystem->AddMappingContext(DefaultInputMappingContext, 0);
-			//for (const FInputMappingContextAndPriority& Mapping : DefaultInputMappings)
-			//{
-			//	if (UInputMappingContext* IMC = Mapping.InputMapping.Get())
-			//	{
-			//		if (Mapping.bRegisterWithSettings)
-			//		{
-			//			if (UEnhancedInputUserSettings* Settings = Subsystem->GetUserSettings())
-			//			{
-			//				Settings->RegisterInputMappingContext(IMC);
-			//			}
+			for (const FInputMappingContextAndPriority& Mapping : DefaultInputMappings)
+			{
+				if (UInputMappingContext* IMC = Mapping.InputMapping.Get())
+				{
+					if (Mapping.bRegisterWithSettings)
+					{
+						if (UEnhancedInputUserSettings* Settings = Subsystem->GetUserSettings())
+						{
+							Settings->RegisterInputMappingContext(IMC);
+						}
 
-			//			FModifyContextOptions Options = {};
-			//			Options.bIgnoreAllPressedKeysUntilRelease = false;
-			//			// Actually add the config to the local player							
-			//			Subsystem->AddMappingContext(IMC, Mapping.Priority, Options);
-			//		}
-			//	}
-			//}
+						FModifyContextOptions Options = {};
+						Options.bIgnoreAllPressedKeysUntilRelease = false;
+						// Actually add the config to the local player							
+						Subsystem->AddMappingContext(IMC, Mapping.Priority, Options);
+					}
+				}
+			}
 
 			// The GASXInputComponent has some additional functions to map Gameplay Tags to an Input Action.
 			UGASXInputComponent* IC = Cast<UGASXInputComponent>(InputComponent);
@@ -131,6 +134,9 @@ void AGASXBaseCharacter::InitializePlayerInput()
 			}
 		}
 	}
+
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), FGASXExtensionEvents::NAME_BindInputsNow);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, FGASXExtensionEvents::NAME_BindInputsNow);
 }
 
 void AGASXBaseCharacter::BindNativeActions_Implementation(UGASXInputComponent* IC, const UGASXInputConfig* InputConfig)

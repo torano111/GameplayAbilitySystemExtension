@@ -10,6 +10,7 @@
 
 class UGASXPawnData;
 struct FGameplayTag;
+struct FInputMappingContextAndPriority;
 
 /**
  * Character base for GameplayAbilitySystemExtension plugin.
@@ -34,16 +35,13 @@ protected:
 	///**
 	// * Input Configs that should be added to this player when initializing the input. These configs
 	// * will NOT be registered with the settings because they are added at runtime. If you want the config
-	// * pair to be in the settings, then add it via the GameFeatureAction_AddInputConfig
+	// * pair to be in the settings, then add it via the GameFeatureAction_AddInputContextMapping
 	// *
 	// * NOTE: You should only add to this if you do not have a game feature plugin accessible to you.
-	// * If you do, then use the GameFeatureAction_AddInputConfig instead.
+	// * If you do, then use the GameFeatureAction_AddInputContextMapping instead.
 	// */
-	//UPROPERTY(EditAnywhere, Category = "GASXBaseCharacter|Input")
-	//TArray<FInputMappingContextAndPriority> DefaultInputMappings;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GASXBaseCharacter|Input")
-	class UInputMappingContext* DefaultInputMappingContext = nullptr;
+	UPROPERTY(EditAnywhere, Category = "GASXBaseCharacter|Input")
+	TArray<FInputMappingContextAndPriority> DefaultInputMappings;
 
 public:
 	AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
