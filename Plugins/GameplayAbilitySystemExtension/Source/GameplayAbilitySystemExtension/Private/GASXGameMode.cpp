@@ -12,6 +12,7 @@
 #include "GASXBaseCharacter.h"
 #include "GASXWorldSettings.h"
 #include "GASXPluginSettings.h"
+#include "GASXAssetManager.h"
 
 AGASXGameMode::AGASXGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -213,7 +214,7 @@ const UGASXPawnData* AGASXGameMode::GetPawnDataForController(const AController* 
 		}
 
 		// Experience is loaded and there's still no pawn data, fall back to the default for now
-		//return ULyraAssetManager::Get().GetDefaultPawnData();
+		return UGASXAssetManager::Get().GetDefaultPawnData();
 	}
 
 	// Experience not loaded yet, so there is no pawn data to be had

@@ -23,14 +23,14 @@ The project is developed with Unreal Engine 5.4
 - EffectContainer from ActionRPG.
 
 # Setup
-- Set GASXInputComponent as Default Input Component Class in Project Settings 
+- Set GASXInputComponent in Project Settings 
 - Use AGASXPlayerController and AGASXPlayerState, or their subclasses.
 - Subclass AGASXBaseCharacter for your character
 - Your GameplayAbilities must inherit from UGASXGameplayAbility
 
 ## Experience
 - Add following types to Primary Asset Types to Scan in Project Settings: Map, GASXExperienceDefinition, GASXUserFacingExperienceDefinition, GASXExperienceActionSet
-- Set GASXWorldSettings as Default World Settings Class.
+- Set GASXWorldSettings and GASXAssetManager in Project Settings 
 - Use GASXGameMode or its subclass as your GameMode. 
 
 ### Experience Precedence order (highest wins)
