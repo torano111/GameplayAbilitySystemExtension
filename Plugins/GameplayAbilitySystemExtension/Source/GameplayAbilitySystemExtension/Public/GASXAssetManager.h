@@ -4,16 +4,20 @@
 
 #include "Engine/AssetManager.h"
 #include "Templates/SubclassOf.h"
+#include "GASXAssetManagerStartupJob.h"
 #include "GASXAssetManager.generated.h"
 
 class UPrimaryDataAsset;
 class UGASXPawnData;
 
+#define GASX_STARTUP_JOB_WEIGHTED(JobFunc, JobWeight) StartupJobs.Add(FGASXAssetManagerStartupJob(#JobFunc, [this](const FGASXAssetManagerStartupJob& StartupJob, TSharedPtr<FStreamableHandle>& LoadHandle){JobFunc;}, JobWeight))
+#define GASX_STARTUP_JOB(JobFunc) GASX_STARTUP_JOB_WEIGHTED(JobFunc, 1.f)
+
 /**
  * UGASXAssetManager
  *
- *  This AssetManager provides simple functionality to load & manager assets.
- *  Unlike ULyraAssetManager in Lyra sample project, this doesn't do specific startup jobs. If you want it, subclass this and override StartInitialLoading().
+ *  Provides functionality to load & manager assets.
+ *  You can add startup jobs by overrinding AddStartupJobs() in a subclass.
  */
 UCLASS(Config = Game)
 class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXAssetManager : public UAssetManager
@@ -60,6 +64,13 @@ protected:
 	// Thread safe way of adding a loaded asset to keep in memory.
 	void AddLoadedAsset(const UObject* Asset);
 
+	//~UAssetManager interface
+	virtual void StartInitialLoading() override;
+	//~End of UAssetManager interface
+
+	// Override this and use GASX_STARTUP_JOB_WEIGHTED() or GASX_STARTUP_JOB() to add startup jobs.
+	virtual void AddStartupJobs();
+
 	UPrimaryDataAsset* LoadGameDataOfClass(TSubclassOf<UPrimaryDataAsset> DataClass, const TSoftObjectPtr<UPrimaryDataAsset>& DataClassPath, FPrimaryAssetType PrimaryAssetType);
 
 protected:
@@ -71,6 +82,19 @@ protected:
 	// Pawn data used when spawning player pawns if there isn't one set on the player state.
 	UPROPERTY(Config)
 	TSoftObjectPtr<UGASXPawnData> DefaultPawnData;
+
+private:
+	// Flushes the StartupJobs array. Processes all startup work.
+	void DoAllStartupJobs();
+
+	// Sets up the ability system
+	void InitializeGameplayCueManager();
+
+	// Called periodically during loads, could be used to feed the status to a loading screen
+	void UpdateInitialGameContentLoadPercent(float GameContentPercent);
+
+	// The list of tasks to execute on startup. Used to track startup progress.
+	TArray<FGASXAssetManagerStartupJob> StartupJobs;
 
 private:
 

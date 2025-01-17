@@ -38,6 +38,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "ModularGameplay",
+			"Enabled": true
+		},
+		{
 			"Name": "ConsoleVariables",
 			"Enabled": true
 		},

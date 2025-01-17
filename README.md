@@ -18,25 +18,34 @@ The project is developed with Unreal Engine 5.4
 - Custom ability cost
 - Custom cooldown
 - Interaction ability system
-- Useful AbilityTasks and AsyncTasks
 - TargetTypes from ActionRPG, which is useful to find targets for GameplayAbilities with simple logic.
 - EffectContainer from ActionRPG.
+- Useful AbilityTasks and AsyncTasks
+- Useful GameFeatureActions
 
 # Setup
-- Set GASXInputComponent in Project Settings 
-- Use AGASXPlayerController and AGASXPlayerState, or their subclasses.
+## Project Settings
+- Set GASXInputComponent, GASXWorldSettings, GASXAssetManager and GASXGameFeaturePolicy
+- Add following types to Primary Asset Types to Scan: Map, GASXExperienceDefinition, GASXUserFacingExperienceDefinition, GASXExperienceActionSet
+
+## Config
+- set GASXGameplayCueManager in DefaultGame.ini
+
+```
+[/Script/GameplayAbilities.AbilitySystemGlobals]
+GlobalGameplayCueManagerClass=/Script/GameplayAbilitySystemExtension.GASXGameplayCueManager
+```
+
+## Core Gameplay Actors/Objects
+- Use AGASXPlayerController, GASXGameMode and AGASXPlayerState (or subclasses).
 - Subclass AGASXBaseCharacter for your character
 - Your GameplayAbilities must inherit from UGASXGameplayAbility
 
-## Experience
-- Add following types to Primary Asset Types to Scan in Project Settings: Map, GASXExperienceDefinition, GASXUserFacingExperienceDefinition, GASXExperienceActionSet
-- Set GASXWorldSettings and GASXAssetManager in Project Settings 
-- Use GASXGameMode or its subclass as your GameMode. 
+# About Experience
+Unlike Lyra, You have to make GASXExperienceDefinitions as DATA ASSETs, not pure blueprint subclasses.
 
-### Experience Precedence order (highest wins)
+## Experience Precedence order (highest wins)
 - URL Options override: Used if you use GASXUserFacingExperienceDefinition to travel.
 - Command Line override
 - World Settings
 - Default experience from Project Settings (Gameplay Ability System Extension section)
-
-NOTE: Unlike Lyra, You have to make GASXExperienceDefinitions as DATA ASSETs, not pure blueprint subclasses.

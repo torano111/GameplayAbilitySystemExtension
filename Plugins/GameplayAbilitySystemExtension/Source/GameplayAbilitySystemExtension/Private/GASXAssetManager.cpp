@@ -8,12 +8,17 @@
 #include "Stats/StatsMisc.h"
 #include "Engine/Engine.h"
 #include "Misc/ScopedSlowTask.h"
+#include "GASXGameplayCueManager.h"
+
+//////////////////////////////////////////////////////////////////////
 
 static FAutoConsoleCommand CVarDumpLoadedAssets(
 	TEXT("gasx.DumpLoadedAssets"),
 	TEXT("Shows all assets that were loaded via the asset manager and are currently in memory."),
 	FConsoleCommandDelegate::CreateStatic(UGASXAssetManager::DumpLoadedAssets)
 );
+
+//////////////////////////////////////////////////////////////////////
 
 UGASXAssetManager::UGASXAssetManager()
 {
@@ -86,6 +91,33 @@ void UGASXAssetManager::DumpLoadedAssets()
 	UE_LOG(LogGASX, Log, TEXT("========== Finish Dumping Loaded Assets =========="));
 }
 
+void UGASXAssetManager::StartInitialLoading()
+{
+	SCOPED_BOOT_TIMING("UGASXAssetManager::StartInitialLoading");
+
+	// This does all of the scanning, need to do this now even if loads are deferred
+	Super::StartInitialLoading();
+
+	AddStartupJobs();
+
+	// Run all the queued up startup jobs
+	DoAllStartupJobs();
+}
+
+void UGASXAssetManager::AddStartupJobs()
+{
+	GASX_STARTUP_JOB(InitializeGameplayCueManager());
+}
+
+void UGASXAssetManager::InitializeGameplayCueManager()
+{
+	SCOPED_BOOT_TIMING("UGASXAssetManager::InitializeGameplayCueManager");
+
+	UGASXGameplayCueManager* GCM = UGASXGameplayCueManager::Get();
+	check(GCM);
+	GCM->LoadAlwaysLoadedCues(); // This doesn't do anything right now.
+}
+
 const UGASXPawnData* UGASXAssetManager::GetDefaultPawnData() const
 {
 	return GetAsset(DefaultPawnData);
@@ -137,5 +169,65 @@ UPrimaryDataAsset* UGASXAssetManager::LoadGameDataOfClass(TSubclassOf<UPrimaryDa
 	}
 
 	return Asset;
+}
+
+void UGASXAssetManager::DoAllStartupJobs()
+{
+	SCOPED_BOOT_TIMING("UGASXAssetManager::DoAllStartupJobs");
+	const double AllStartupJobsStartTime = FPlatformTime::Seconds();
+
+	if (IsRunningDedicatedServer())
+	{
+		// No need for periodic progress updates, just run the jobs
+		for (const FGASXAssetManagerStartupJob& StartupJob : StartupJobs)
+		{
+			StartupJob.DoJob();
+		}
+	}
+	else
+	{
+		if (StartupJobs.Num() > 0)
+		{
+			float TotalJobValue = 0.0f;
+			for (const FGASXAssetManagerStartupJob& StartupJob : StartupJobs)
+			{
+				TotalJobValue += StartupJob.JobWeight;
+			}
+
+			float AccumulatedJobValue = 0.0f;
+			for (FGASXAssetManagerStartupJob& StartupJob : StartupJobs)
+			{
+				const float JobValue = StartupJob.JobWeight;
+				StartupJob.SubstepProgressDelegate.BindLambda([This = this, AccumulatedJobValue, JobValue, TotalJobValue](float NewProgress)
+					{
+						const float SubstepAdjustment = FMath::Clamp(NewProgress, 0.0f, 1.0f) * JobValue;
+						const float OverallPercentWithSubstep = (AccumulatedJobValue + SubstepAdjustment) / TotalJobValue;
+
+						This->UpdateInitialGameContentLoadPercent(OverallPercentWithSubstep);
+					});
+
+				StartupJob.DoJob();
+
+				StartupJob.SubstepProgressDelegate.Unbind();
+
+				AccumulatedJobValue += JobValue;
+
+				UpdateInitialGameContentLoadPercent(AccumulatedJobValue / TotalJobValue);
+			}
+		}
+		else
+		{
+			UpdateInitialGameContentLoadPercent(1.0f);
+		}
+	}
+
+	StartupJobs.Empty();
+
+	UE_LOG(LogGASX, Display, TEXT("All startup jobs took %.2f seconds to complete"), FPlatformTime::Seconds() - AllStartupJobsStartTime);
+
+}
+
+void UGASXAssetManager::UpdateInitialGameContentLoadPercent(float GameContentPercent)
+{
 }
 
