@@ -12,6 +12,7 @@
 #include "GASXDataTypes.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "InputMappingContext.h"
+#include "GASXAssetManager.h"
 
 // Sets default values
 AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -90,7 +91,12 @@ void AGASXBaseCharacter::InitializePlayerInput()
 		{
 			for (const FInputMappingContextAndPriority& Mapping : DefaultInputMappings)
 			{
-				if (UInputMappingContext* IMC = Mapping.InputMapping.Get())
+				bool bTrackInAssetManager = false;
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+				bTrackInAssetManager = true;
+#endif
+				UGASXAssetManager& AssetManager = UGASXAssetManager::Get();
+				if (UInputMappingContext* IMC = AssetManager.GetAsset(Mapping.InputMapping, bTrackInAssetManager))	// explicitly load the asset
 				{
 					if (Mapping.bRegisterWithSettings)
 					{
@@ -142,7 +148,7 @@ void AGASXBaseCharacter::InitializePlayerInput()
 void AGASXBaseCharacter::BindNativeActions_Implementation(UGASXInputComponent* IC, const UGASXInputConfig* InputConfig)
 {
 	// A subclass should implement this as needed.
-	
+
 	// Example
 	//IC->BindNativeAction(InputConfig, LyraGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ false);
 	//IC->BindNativeAction(InputConfig, LyraGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, /*bLogIfNotFound=*/ false);
