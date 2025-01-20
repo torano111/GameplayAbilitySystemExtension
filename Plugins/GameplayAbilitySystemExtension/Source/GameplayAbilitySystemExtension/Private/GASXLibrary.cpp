@@ -118,7 +118,7 @@ void UGASXLibrary::TravelToExperience(const UObject* WorldContextObject, UGASXUs
 			{
 				FString TravelURL = UserFacingExperienceDefinition->ConstructTravelURL();
 				UE_LOG(LogGASXExperience, Log, TEXT("UGASXLibrary::TravelToExperience: URL=%s"), *TravelURL);
-				World->ServerTravel(TravelURL);
+				UGameplayStatics::OpenLevel(WorldContextObject, *TravelURL);
 			}
 		}
 	}
