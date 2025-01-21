@@ -116,7 +116,7 @@ void UGASXGameFeature_AddGameplayCuePaths::OnGameFeatureUnregistering(const UGam
 	const FString PluginRootPath = TEXT("/") + PluginName;
 	for (const UGameFeatureAction* Action : GameFeatureData->GetActions())
 	{
-		if (const UGameFeatureAction_AddGameplayCuePath* AddGameplayCueGFA = Cast<UGameFeatureAction_AddGameplayCuePath>(GameFeatureData))
+		if (const UGameFeatureAction_AddGameplayCuePath* AddGameplayCueGFA = Cast<UGameFeatureAction_AddGameplayCuePath>(Action))
 		{
 			const TArray<FDirectoryPath>& DirsToAdd = AddGameplayCueGFA->GetDirectoryPathsToAdd();
 			
