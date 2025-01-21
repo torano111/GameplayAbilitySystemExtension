@@ -11,7 +11,7 @@ class UGASXAbilityTagRelationshipMap;
 /**
  * AbilitySystemComponent for GameplayAbilitySystemExtension plugin.
  */
-UCLASS()
+UCLASS(ClassGroup = AbilitySystem, meta = (BlueprintSpawnableComponent))
 class GAMEPLAYABILITYSYSTEMEXTENSION_API UGASXAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
