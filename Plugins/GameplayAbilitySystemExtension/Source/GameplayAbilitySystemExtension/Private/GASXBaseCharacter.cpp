@@ -117,12 +117,16 @@ void AGASXBaseCharacter::InitializePlayerInput()
 			UGASXInputComponent* IC = Cast<UGASXInputComponent>(InputComponent);
 			if (ensureMsgf(IC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UGASXInputComponent or a subclass of it.")))
 			{
-				// This is where we actually bind and input action to a gameplay tag, which means that Gameplay Ability Blueprints will
-				// be triggered directly by these input actions Triggered events. 
-				TArray<uint32> BindHandles;
-				IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+				if (ensureMsgf(!InputData.Contains(InputConfig), TEXT("AGASXBaseCharacter::InitializePlayerInput: Canceled to bind InputConfig(%s) because InputData already contained it."), *(InputConfig->GetName())))
+				{
+					// This is where we actually bind and input action to a gameplay tag, which means that Gameplay Ability Blueprints will
+					// be triggered directly by these input actions Triggered events. 
+					TArray<uint32> BindHandles;
+					IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 
-				BindNativeActions(IC, InputConfig);
+					BindNativeActions(IC, InputConfig);
+					InputData.Add(InputConfig, FInputBindHandle(BindHandles));
+				}
 			}
 
 			check(AbilitySystemComponent.IsValid());
@@ -141,6 +145,7 @@ void AGASXBaseCharacter::InitializePlayerInput()
 		}
 	}
 
+	bReadyToBindInputs = true;
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), FGASXExtensionEvents::NAME_AbilityReady);
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, FGASXExtensionEvents::NAME_AbilityReady);
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), FGASXExtensionEvents::NAME_BindInputsNow);
@@ -173,6 +178,59 @@ void AGASXBaseCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 	{
 		ASC->AbilityInputTagReleased(InputTag);
 	}
+}
+
+void AGASXBaseCharacter::AddAdditionalInputConfig(const UGASXInputConfig* InputConfig)
+{
+	TArray<uint32> BindHandles;
+
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+
+	UGASXInputComponent* IC = Cast<UGASXInputComponent>(InputComponent);
+	if (ensureMsgf(IC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UGASXInputComponent or a subclass of it.")))
+	{
+		if (ensureMsgf(!InputData.Contains(InputConfig), TEXT("AGASXBaseCharacter::AddAdditionalInputConfig: Canceled to bind InputConfig(%s) because InputData already contained it."), *(InputConfig->GetName())))
+		{
+			IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+			InputData.Add(InputConfig, FInputBindHandle(BindHandles));
+		}
+	}
+}
+
+void AGASXBaseCharacter::RemoveInputConfig(const UGASXInputConfig* InputConfig)
+{
+	TArray<uint32> BindHandles;
+
+	const APlayerController* PC = GetController<APlayerController>();
+	check(PC);
+
+	const ULocalPlayer* LP = PC->GetLocalPlayer();
+	check(LP);
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	check(Subsystem);
+
+	UGASXInputComponent* IC = Cast<UGASXInputComponent>(InputComponent);
+	if (ensureMsgf(IC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UGASXInputComponent or a subclass of it.")))
+	{
+		if (InputData.Contains(InputConfig))
+		{
+			auto HandleData = InputData.FindAndRemoveChecked(InputConfig);
+			IC->RemoveBinds(HandleData.Data);
+		}
+	}
+}
+
+bool AGASXBaseCharacter::IsReadyToBindInputs() const
+{
+	return bReadyToBindInputs;
 }
 
 // Called every frame

@@ -9,8 +9,26 @@
 #include "GASXBaseCharacter.generated.h"
 
 class UGASXPawnData;
+class UGASXInputConfig;
 struct FGameplayTag;
 struct FInputMappingContextAndPriority;
+
+USTRUCT()
+struct FInputBindHandle
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	TArray<uint32> Data;
+
+	FInputBindHandle() { }
+
+	FInputBindHandle(TArray<uint32> NewData)
+		: Data(NewData)
+	{
+
+	}
+};
 
 /**
  * Character base for GameplayAbilitySystemExtension plugin.
@@ -43,6 +61,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "GASXBaseCharacter|Input")
 	TArray<FInputMappingContextAndPriority> DefaultInputMappings;
 
+	/** True when player input bindings have been applied, will never be true for non - players */
+	bool bReadyToBindInputs = false;
+
+	UPROPERTY()
+	TMap<const UGASXInputConfig*, FInputBindHandle> InputData;
+
 public:
 	AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
@@ -67,6 +91,17 @@ public:
 	// New data can be set if the current PawnData is nullptr. Return true if new data is set.
 	UFUNCTION(BlueprintCallable, Category = "GASXBaseCharacter")
 	bool SetPawnData(const UGASXPawnData* InPawnData);
+
+	// Adds mode-specific input config
+	// NOTE: This does NOT bind native actions. 
+	void AddAdditionalInputConfig(const UGASXInputConfig* InputConfig);
+
+	// Removes an input config if it has been added
+	void RemoveInputConfig(const UGASXInputConfig* InputConfig);
+
+	// True if this is controlled by a real player and has progressed far enough in initialization where additional input bindings can be added
+	UFUNCTION(BlueprintPure, Category = "GASXBaseCharacter")
+	bool IsReadyToBindInputs() const;
 
 protected:
 	// Called when the game starts or when spawned
