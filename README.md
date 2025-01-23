@@ -22,6 +22,7 @@ The project is developed with Unreal Engine 5.4
 - EffectContainer from ActionRPG.
 - Useful AbilityTasks and AsyncTasks
 - Useful GameFeatureActions
+- Easy-to-use AttributeSet initializer
 
 # Setup
 ## Project Settings

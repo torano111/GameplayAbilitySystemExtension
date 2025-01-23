@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Experience/GASXExperienceManagerComponent.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameplayEffects/AttributeSetInitializer.h"
 
 ////////////////////
 ///// UAbilitySystemComponent
@@ -44,6 +45,24 @@ void UGASXLibrary::GetTargetTypeTargets(TSubclassOf<class UGASXTargetType> Targe
 {
 	const UGASXTargetType* TargetTypeCDO = TargetType.GetDefaultObject();
 	TargetTypeCDO->GetTargets(ActorInfo, EventData, OutHitResults, OutActors);
+}
+
+////////////////////
+///// Attribute Set Initializer
+
+FActiveGameplayEffectHandle UGASXLibrary::ApplyAttributeSetInitializer(UAbilitySystemComponent* ASC, FAttributeSetInitializer AttributeSetInitializer, float Level, FGameplayEffectContextHandle EffectContext)
+{
+	if (ASC != nullptr && AttributeSetInitializer.IsValid())
+	{
+		if (!EffectContext.IsValid())
+		{
+			EffectContext = ASC->MakeEffectContext();
+		}
+
+		return AttributeSetInitializer.Apply(ASC, Level, EffectContext);
+	}
+
+	return FActiveGameplayEffectHandle();
 }
 
 ////////////////////

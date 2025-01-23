@@ -8,6 +8,7 @@
 #include "Abilities/GameplayAbilityTypes.h"
 #include "GASXLibrary.generated.h"
 
+struct FAttributeSetInitializer;
 struct FGASXGameplayEffectContainerSpec;
 class UGASXUserFacingExperienceDefinition;
 class UGASXExperienceManagerComponent;
@@ -33,6 +34,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Ability)
 	static void GetTargetTypeTargets(TSubclassOf<class UGASXTargetType> TargetType, FGameplayAbilityActorInfo ActorInfo, FGameplayEventData EventData, TArray<FHitResult>& OutHitResults, TArray<AActor*>& OutActors);
 	
+	////////////////////
+	///// Attribute Set Initializer
+
+	UFUNCTION(BlueprintCallable, Category = "AttributeSetInitializer")
+	static FActiveGameplayEffectHandle ApplyAttributeSetInitializer(UAbilitySystemComponent* ASC, FAttributeSetInitializer AttributeSetInitializer, float Level, FGameplayEffectContextHandle EffectContext);
+
 	////////////////////
 	///// Interaction
 

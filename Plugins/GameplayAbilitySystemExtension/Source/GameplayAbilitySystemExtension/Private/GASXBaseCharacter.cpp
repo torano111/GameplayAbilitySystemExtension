@@ -141,6 +141,8 @@ void AGASXBaseCharacter::InitializePlayerInput()
 		}
 	}
 
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), FGASXExtensionEvents::NAME_AbilityReady);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, FGASXExtensionEvents::NAME_AbilityReady);
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), FGASXExtensionEvents::NAME_BindInputsNow);
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, FGASXExtensionEvents::NAME_BindInputsNow);
 }

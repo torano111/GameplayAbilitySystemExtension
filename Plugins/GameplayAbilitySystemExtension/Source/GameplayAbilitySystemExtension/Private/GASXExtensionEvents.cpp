@@ -3,3 +3,4 @@
 #include "GASXExtensionEvents.h"
 
 const FName FGASXExtensionEvents::NAME_BindInputsNow("BindInputsNow");
+const FName FGASXExtensionEvents::NAME_AbilityReady("AbilityReady");
