@@ -8,7 +8,9 @@ The project is developed with Unreal Engine 5.4
 # Content
 `Plugins/GameplayAbilitySystemExtension`: Core elements in this project. Copy this and dependencies to your project.
 
-`Plugins/ModularGameplayActors`: GameplayAbilitySystemExtension plugin depends on this.
+`Plugins/ModularGameplayActors`: Copied from Lyra. GameplayAbilitySystemExtension plugin depends on this.
+
+`Plugins/CommonLoadingScreen`: Copied from Lyra. You don't need this. It is just for showing loading screen while loading experience.
 
 `Other content like Source/ and Content/`: Example and test content. You don't need these unless you want to see examples.
 

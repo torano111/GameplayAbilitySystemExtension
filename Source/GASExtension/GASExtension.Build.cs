@@ -8,7 +8,7 @@ public class GASExtension : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayAbilitySystemExtension", "GameplayTags", "GameplayAbilities" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayAbilitySystemExtension", "GameplayTags", "GameplayAbilities", "CommonLoadingScreen" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

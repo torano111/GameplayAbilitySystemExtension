@@ -13,7 +13,8 @@
 				"GameplayAbilities",
 				"ModularGameplay",
 				"ModularGameplayActors",
-				"GameFeatures"
+				"GameFeatures",
+				"CommonLoadingScreen"
 			]
 		}
 	],
