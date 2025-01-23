@@ -15,6 +15,11 @@ struct GAMEPLAYABILITYSYSTEMEXTENSION_API FAttributeMagnitude
 	GENERATED_BODY()
 
 public:
+	FAttributeMagnitude()
+		: Magnitude(0.f)
+	{
+	}
+
 	/** The Attribute we modify or the GE we modify modifies. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FAttributeSetInitializer", meta = (FilterMetaTag = "HideFromModifiers"))
 	FGameplayAttribute Attribute;
