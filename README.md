@@ -16,6 +16,7 @@ The project is developed with Unreal Engine 5.4
 
 # Features
 - **single-player projects only**: For multiplayer projects, why don't you just use Lyra?
+- Experience system from Lyra.
 - InputAction-GameplayAbility binding system from Lyra (InputConfig and AbilitySet). There are also PawnData and AbilityTagRelationshipMapping.
 - Custom ability cost
 - Custom cooldown
