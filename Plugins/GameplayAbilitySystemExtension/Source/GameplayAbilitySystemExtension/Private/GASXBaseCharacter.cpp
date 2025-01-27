@@ -8,7 +8,7 @@
 #include "DataAssets/GASXAbilitySet.h"
 #include "GASXInputComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
-#include "GASXExtensionEvents.h"
+#include "GASXGameplayTags.h"
 #include "GASXDataTypes.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "InputMappingContext.h"
@@ -146,10 +146,14 @@ void AGASXBaseCharacter::InitializePlayerInput()
 	}
 
 	bReadyToBindInputs = true;
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), FGASXExtensionEvents::NAME_AbilityReady);
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, FGASXExtensionEvents::NAME_AbilityReady);
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), FGASXExtensionEvents::NAME_BindInputsNow);
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, FGASXExtensionEvents::NAME_BindInputsNow);
+
+	const auto NAME_AbilityReady = FName(*(GASXGameplayTags::ExtensionEvent_AbilityReady.GetTag().ToString()));
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_AbilityReady);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_AbilityReady);
+
+	const auto NAME_BindInputsNow = FName(*(GASXGameplayTags::ExtensionEvent_BindInputsNow.GetTag().ToString()));
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow);
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_BindInputsNow);
 }
 
 void AGASXBaseCharacter::BindNativeActions_Implementation(UGASXInputComponent* IC, const UGASXInputConfig* InputConfig)

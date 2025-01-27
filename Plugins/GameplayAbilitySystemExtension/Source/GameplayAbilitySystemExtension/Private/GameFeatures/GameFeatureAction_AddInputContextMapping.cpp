@@ -12,7 +12,7 @@
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "GASXAssetManager.h"
 #include "GASXDataTypes.h"
-#include "GASXExtensionEvents.h"
+#include "GASXGameplayTags.h"
 
 #if WITH_EDITOR
 #include "Misc/DataValidation.h"
@@ -24,6 +24,12 @@
 
 //////////////////////////////////////////////////////////////////////
 // UGameFeatureAction_AddInputContextMapping
+
+UGameFeatureAction_AddInputContextMapping::UGameFeatureAction_AddInputContextMapping()
+	: Super()
+{
+	ExtensionEventTag = GASXGameplayTags::ExtensionEvent_BindInputsNow;
+}
 
 void UGameFeatureAction_AddInputContextMapping::OnGameFeatureRegistering()
 {
@@ -238,7 +244,7 @@ void UGameFeatureAction_AddInputContextMapping::HandleControllerExtension(AActor
 	{
 		RemoveInputMapping(AsController, ActiveData);
 	}
-	else if ((EventName == UGameFrameworkComponentManager::NAME_ExtensionAdded) || (EventName == FGASXExtensionEvents::NAME_BindInputsNow))
+	else if ((EventName == UGameFrameworkComponentManager::NAME_ExtensionAdded) || (EventName == FName(*ExtensionEventTag.ToString())))
 	{
 		AddInputMappingForPlayer(AsController->GetLocalPlayer(), ActiveData);
 	}

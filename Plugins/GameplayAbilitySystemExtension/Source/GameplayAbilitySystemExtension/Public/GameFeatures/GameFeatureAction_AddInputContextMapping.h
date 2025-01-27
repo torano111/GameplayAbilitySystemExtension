@@ -2,6 +2,7 @@
 #pragma once
 
 #include "GameFeatureAction_WorldActionBase.h"
+#include "GameplayTagContainer.h"
 #include "GameFeatureAction_AddInputContextMapping.generated.h"
 
 class AActor;
@@ -21,6 +22,8 @@ class UGameFeatureAction_AddInputContextMapping final : public UGameFeatureActio
 	GENERATED_BODY()
 
 public:
+	UGameFeatureAction_AddInputContextMapping();
+
 	//~UGameFeatureAction interface
 	virtual void OnGameFeatureRegistering() override;
 	virtual void OnGameFeatureActivating(FGameFeatureActivatingContext& Context) override;
@@ -33,6 +36,10 @@ public:
 	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
 #endif
 	//~End of UObject interface
+
+	// When an extension event with the same name as this tag is sent, the InputContextMapping is added.
+	UPROPERTY(EditAnywhere, Category = "Input")
+	FGameplayTag ExtensionEventTag;
 
 	UPROPERTY(EditAnywhere, Category="Input")
 	TArray<FInputMappingContextAndPriority> InputMappings;

@@ -57,6 +57,10 @@ struct FGameFeatureAbilitiesEntry
 {
 	GENERATED_BODY()
 
+	// When an extension event with the same name as this tag is sent, the abilities are added.
+	UPROPERTY(EditAnywhere, Category = "Abilities")
+	FGameplayTag ExtensionEventTag;
+
 	// The base actor class to add to. 
 	// This must be the OwnerActor of UGASXAbilitySystemComponent, such as GASXPlayerState.
 	// If the component if not found, then UGameFeatureAction_AddAbilities will add it.
@@ -74,6 +78,8 @@ struct FGameFeatureAbilitiesEntry
 	// List of ability sets to grant to actors of the specified class
 	UPROPERTY(EditAnywhere, Category="Attributes", meta=(AssetBundles="Client,Server"))
 	TArray<TSoftObjectPtr<const UGASXAbilitySet>> GrantedAbilitySets;
+
+	FGameFeatureAbilitiesEntry();
 };
 
 //////////////////////////////////////////////////////////////////////

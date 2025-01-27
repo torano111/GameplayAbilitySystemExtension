@@ -4,6 +4,7 @@
 
 #include "GameFeatureAction_WorldActionBase.h"
 #include "UObject/SoftObjectPtr.h"
+#include "GameplayTagContainer.h"
 #include "GameFeatureAction_AddInputBinding.generated.h"
 
 class AActor;
@@ -24,6 +25,8 @@ class UGameFeatureAction_AddInputBinding final : public UGameFeatureAction_World
 	GENERATED_BODY()
 
 public:
+	UGameFeatureAction_AddInputBinding();
+
 	//~ Begin UGameFeatureAction interface
 	virtual void OnGameFeatureActivating(FGameFeatureActivatingContext& Context) override;
 	virtual void OnGameFeatureDeactivating(FGameFeatureDeactivatingContext& Context) override;
@@ -34,6 +37,10 @@ public:
 	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
 #endif
 	//~ End UObject interface
+
+	// When an extension event with the same name as this tag is sent, the InputContextMapping is added.
+	UPROPERTY(EditAnywhere, Category = "Input")
+	FGameplayTag ExtensionEventTag;
 
 	UPROPERTY(EditAnywhere, Category="Input", meta=(AssetBundles="Client,Server"))
 	TArray<TSoftObjectPtr<const UGASXInputConfig>> InputConfigs;

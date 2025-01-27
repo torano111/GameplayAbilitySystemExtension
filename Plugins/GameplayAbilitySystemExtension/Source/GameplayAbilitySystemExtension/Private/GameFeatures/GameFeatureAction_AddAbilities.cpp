@@ -6,7 +6,7 @@
 #include "GASXAbilitySystemComponent.h"
 #include "Engine/World.h"
 #include "GameFeatures/GameFeatureAction_WorldActionBase.h"
-#include "GASXExtensionEvents.h"
+#include "GASXGameplayTags.h"
 #include "GASXBaseCharacter.h"
 
 #if WITH_EDITOR
@@ -16,6 +16,19 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GameFeatureAction_AddAbilities)
 
 #define LOCTEXT_NAMESPACE "GameFeatures"
+
+//////////////////////////////////////////////////////////////////////
+// FGameFeatureAbilitiesEntry
+
+FGameFeatureAbilitiesEntry::FGameFeatureAbilitiesEntry()
+	: ExtensionEventTag()
+	, ActorClass(nullptr)
+	, GrantedAbilities()
+	, GrantedAttributes()
+	, GrantedAbilitySets()
+{
+	ExtensionEventTag = GASXGameplayTags::ExtensionEvent_AbilityReady;
+}
 
 //////////////////////////////////////////////////////////////////////
 // UGameFeatureAction_AddAbilities
@@ -152,7 +165,7 @@ void UGameFeatureAction_AddAbilities::HandleActorExtension(AActor* Actor, FName 
 		{
 			RemoveActorAbilities(Actor, *ActiveData);
 		}
-		else if ((EventName == UGameFrameworkComponentManager::NAME_ExtensionAdded) || (EventName == FGASXExtensionEvents::NAME_AbilityReady))
+		else if ((EventName == UGameFrameworkComponentManager::NAME_ExtensionAdded) || (EventName == FName(*Entry.ExtensionEventTag.ToString())))
 		{
 			AddActorAbilities(Actor, Entry, *ActiveData);
 		}
@@ -316,4 +329,3 @@ UActorComponent* UGameFeatureAction_AddAbilities::FindOrAddComponentForActor(UCl
 }
 
 #undef LOCTEXT_NAMESPACE
-

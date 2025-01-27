@@ -10,7 +10,7 @@
 #include "Engine/LocalPlayer.h"
 #include "GameFeatures/GameFeatureAction_WorldActionBase.h"
 #include "DataAssets/GASXInputConfig.h"
-#include "GASXExtensionEvents.h"
+#include "GASXGameplayTags.h"
 #include "GASXBaseCharacter.h"
 
 #if WITH_EDITOR
@@ -23,6 +23,12 @@
 
 //////////////////////////////////////////////////////////////////////
 // UGameFeatureAction_AddInputBinding
+
+UGameFeatureAction_AddInputBinding::UGameFeatureAction_AddInputBinding()
+	: Super()
+{
+	ExtensionEventTag = GASXGameplayTags::ExtensionEvent_BindInputsNow;
+}
 
 void UGameFeatureAction_AddInputBinding::OnGameFeatureActivating(FGameFeatureActivatingContext& Context)
 {
@@ -114,7 +120,7 @@ void UGameFeatureAction_AddInputBinding::HandlePawnExtension(AActor* Actor, FNam
 	{
 		RemoveInputBinding(AsPawn, ActiveData);
 	}
-	else if ((EventName == UGameFrameworkComponentManager::NAME_ExtensionAdded) || (EventName == FGASXExtensionEvents::NAME_BindInputsNow))
+	else if ((EventName == UGameFrameworkComponentManager::NAME_ExtensionAdded) || (EventName == FName(*ExtensionEventTag.ToString())))
 	{
 		AddInputBindingForPlayer(AsPawn, ActiveData);
 	}
