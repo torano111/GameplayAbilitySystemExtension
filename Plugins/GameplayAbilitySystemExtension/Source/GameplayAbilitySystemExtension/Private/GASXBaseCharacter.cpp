@@ -13,6 +13,8 @@
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "InputMappingContext.h"
 #include "GASXAssetManager.h"
+#include "GASXGameplayTags.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -67,6 +69,7 @@ void AGASXBaseCharacter::InitGameplayAbilitySystem(AActor* InOwnerActor, AActor*
 	if (AbilitySystemComponent.IsValid())
 	{
 		AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+		InitializeMovementModeTags();
 	}
 }
 
@@ -262,3 +265,62 @@ UGASXAbilitySystemComponent* AGASXBaseCharacter::GetGASXAbilitySystemComponent()
 	return AbilitySystemComponent.Get();
 }
 
+void AGASXBaseCharacter::InitializeMovementModeTags()
+{
+	// Clear tags that may be lingering on the ability system from the previous pawn.
+	if (AbilitySystemComponent.IsValid())
+	{
+		for (const TPair<uint8, FGameplayTag>& TagMapping : GASXGameplayTags::MovementModeTagMap)
+		{
+			if (TagMapping.Value.IsValid())
+			{
+				AbilitySystemComponent->SetLooseGameplayTagCount(TagMapping.Value, 0);
+			}
+		}
+
+		const auto CustomMovementModeTagMap = GetCustomMovementModeTagMap();
+		for (const TPair<uint8, FGameplayTag>& TagMapping : CustomMovementModeTagMap)
+		{
+			if (TagMapping.Value.IsValid())
+			{
+				AbilitySystemComponent->SetLooseGameplayTagCount(TagMapping.Value, 0);
+			}
+		}
+
+		SetMovementModeTag(GetCharacterMovement()->MovementMode, GetCharacterMovement()->CustomMovementMode, true);
+	}
+}
+
+void AGASXBaseCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+
+	SetMovementModeTag(PrevMovementMode, PreviousCustomMode, false);
+	SetMovementModeTag(GetCharacterMovement()->MovementMode, GetCharacterMovement()->CustomMovementMode, true);
+}
+
+void AGASXBaseCharacter::SetMovementModeTag(EMovementMode MovementMode, uint8 CustomMovementMode, bool bTagEnabled)
+{
+	if (AbilitySystemComponent.IsValid())
+	{
+		const FGameplayTag* MovementModeTag = nullptr;
+
+		bool bFoundCustomTag = false;
+		const auto CustomMovementModeTagMap = GetCustomMovementModeTagMap();
+		if (MovementMode == MOVE_Custom && CustomMovementModeTagMap.Num() > 0)
+		{
+			MovementModeTag = CustomMovementModeTagMap.Find(CustomMovementMode);
+			bFoundCustomTag = MovementModeTag != nullptr;
+		}
+
+		if (!bFoundCustomTag)
+		{
+			MovementModeTag = GASXGameplayTags::MovementModeTagMap.Find(MovementMode);
+		}
+
+		if (MovementModeTag && MovementModeTag->IsValid())
+		{
+			AbilitySystemComponent->SetLooseGameplayTagCount(*MovementModeTag, (bTagEnabled ? 1 : 0));
+		}
+	}
+}

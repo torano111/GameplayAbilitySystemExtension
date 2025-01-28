@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "ModularCharacter.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "GASXBaseCharacter.generated.h"
 
 class UGASXPawnData;
@@ -120,4 +121,13 @@ protected:
 
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
+	
+	////////////////////
+	////////// Movement mode tags
+
+	virtual void InitializeMovementModeTags();
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
+	void SetMovementModeTag(EMovementMode MovementMode, uint8 CustomMovementMode, bool bTagEnabled);
+	// Override this if you have custom movement modes. This should return mapping of your custom movement modes and corresponding tags.
+	const TMap<uint8, FGameplayTag> GetCustomMovementModeTagMap() const { return TMap<uint8, FGameplayTag>();  }
 };
