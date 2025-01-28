@@ -21,7 +21,7 @@
  * 
  * ----- Usage -----
  * - make a child ability
- * - set StartInteractionTag. This tag must be the same as GA_PerformInteractBase's ability trigger tag
+ * - set InteractionAbilityTag. This tag must be the same as both GA_PerformInteractBase's AbilityTag and ability trigger's tag
  * - set EndInteractionTag. This tag must be the same as GA_PerformInteractBase's EndInteractionTag
  * - (Optional) set FoundInteractableTag, LostInteractionTag, and BlockInteractionTag.
  * - set TargetType so that the subclass can find targets.
@@ -36,11 +36,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ability|FindInteractable")
 	float TimerPeriod;
 
+	// Interaction ability's AbilityTag. This is used to check if interation ability can be triggered.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability|FindInteractable")
+	FGameplayTag InteractionAbilityTag;
+
 	// GameplayEvent tag to be sent when interaction starts
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability|FindInteractable")
 	FGameplayTag StartInteractionTag;
 
-	// GameplayEvent tag to be sent when interaction ends
+	// GameplayEvent tag to be sent when interaction ends. This is also used to stop interaction ability.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability|FindInteractable")
 	FGameplayTag EndInteractionTag;
 
@@ -51,10 +55,6 @@ public:
 	// GameplayEvent tag to be sent when the found target is lost
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability|FindInteractable")
 	FGameplayTag LostInteractableTag;
-
-	// When this tag is added to the owner, stop timer loop finding interactables, and end ongoing interaction immediately.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ability|FindInteractable")
-	FGameplayTag BlockInteractionTag;
 
 	// Blocks ongoing interaction if we lost the target. 
 	// e.g.block interaction when owner looks away from target while interacting.
@@ -88,9 +88,6 @@ public:
 	// End of UGameplayAbility interface
 
 protected:
-	UFUNCTION()
-	virtual void OnBlockInteractionTagAddedOrRemoved(const FGameplayTag CallbackTag, int32 NewCount);
-
 	UFUNCTION()
 	virtual void TickFindInteractable();
 

@@ -34,9 +34,6 @@ void UGA_Passive_FindInteractableBase::ActivateAbility(const FGameplayAbilitySpe
 	auto ASC = OwnerInfo->AbilitySystemComponent.Get();
 	if (ASC)
 	{
-		DelegateHandle = ASC->RegisterGameplayTagEvent(BlockInteractionTag, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &UGA_Passive_FindInteractableBase::OnBlockInteractionTagAddedOrRemoved);
-		bRegisteredCallback = true;
-
 		if (UWorld* World = GetWorld())
 		{
 			World->GetTimerManager().SetTimer(TimerHandle_LoopFindInteractable, this, &UGA_Passive_FindInteractableBase::TickFindInteractable, TimerPeriod, FTimerManagerTimerParameters{ .bLoop = true, .bMaxOncePerFrame = true, .FirstDelay = TimerPeriod });
@@ -55,36 +52,37 @@ void UGA_Passive_FindInteractableBase::EndAbility(const FGameplayAbilitySpecHand
 	{
 		World->GetTimerManager().ClearTimer(TimerHandle_LoopFindInteractable);
 	}
-
-	auto ASC = ActorInfo->AbilitySystemComponent.Get();
-	if (bRegisteredCallback && ASC)
-	{
-		ASC->RegisterGameplayTagEvent(BlockInteractionTag).Remove(DelegateHandle);
-	}
-}
-
-void UGA_Passive_FindInteractableBase::OnBlockInteractionTagAddedOrRemoved(const FGameplayTag CallbackTag, int32 NewCount)
-{
-	if (UWorld* World = GetWorld())
-	{
-		if (NewCount >= 1) // Tag added
-		{
-			World->GetTimerManager().PauseTimer(TimerHandle_LoopFindInteractable);
-			bIsInteractionBlocked = true;
-
-			CancelWaiting(true);
-			LastData.Clear();
-		}
-		else if (NewCount == 0) // Tag removed
-		{
-			World->GetTimerManager().UnPauseTimer(TimerHandle_LoopFindInteractable);
-			bIsInteractionBlocked = false;
-		}
-	}
 }
 
 void UGA_Passive_FindInteractableBase::TickFindInteractable()
 {
+	if (CurrentActorInfo && InteractionAbilityTag.IsValid())
+	{
+		auto ASC = CurrentActorInfo->AbilitySystemComponent;
+		if (ASC.IsValid())
+		{
+			// Stops following operation if the owner ASC contains interaction abilities and any of them can be activated.  
+			TArray<FGameplayAbilitySpec*> InteractionAbilities;
+			ASC->GetActivatableGameplayAbilitySpecsByAllMatchingTags(FGameplayTagContainer(InteractionAbilityTag), InteractionAbilities, true);
+			if (InteractionAbilities.Num() == 0)
+			{
+				bIsInteractionBlocked = true;
+				CancelWaiting(true);
+				LastData.Clear();
+				return;
+			}
+			else
+			{
+				bIsInteractionBlocked = false;
+			}
+		}
+	}
+
+	if (bIsInteractionBlocked || !InteractionAbilityTag.IsValid())
+	{
+		return;
+	}
+
 	bool bFoundValidData = false;
 	FGameplayAbilityTargetDataHandle FoundData;
 	bFoundValidData = TryFindTargetInteractable(FoundData);
@@ -129,6 +127,7 @@ void UGA_Passive_FindInteractableBase::OnFoundTarget(const FGameplayAbilityTarge
 	{
 		CurrentTargetData = FoundData;
 
+		// Notifies that target is found.
 		FGameplayEventData Payload;
 		Payload.EventTag = FoundInteractableTag;
 		Payload.Instigator = CurrentActorInfo->AvatarActor.Get();
@@ -156,6 +155,7 @@ void UGA_Passive_FindInteractableBase::CancelWaiting(bool bCancelOngoingInteract
 		EndInteraction(false);
 	}
 
+	// Notifies that target is lost.
 	FGameplayEventData Payload;
 	Payload.EventTag = LostInteractableTag;
 	Payload.Instigator = CurrentActorInfo->AvatarActor.Get();
@@ -184,11 +184,16 @@ void UGA_Passive_FindInteractableBase::InputPressed(const FGameplayAbilitySpecHa
 		FHitResult HitResult = UAbilitySystemBlueprintLibrary::GetHitResultFromTargetData(InteractingTargetData, 0);
 		float Duration = IGASXInteractable::Execute_GetInteractionDuration(HitResult.GetActor(), HitResult.GetComponent());
 
+		// Notifies interaction start.
 		FGameplayEventData Payload;
 		Payload.EventTag = StartInteractionTag;
 		Payload.Instigator = ActorInfo->AvatarActor.Get();
 		Payload.TargetData = InteractingTargetData;
 		Payload.EventMagnitude = Duration; // Pass interaction duration
+		SendGameplayEvent(Payload.EventTag, Payload);
+
+		// Triggers interaction ability
+		Payload.EventTag = InteractionAbilityTag;
 		SendGameplayEvent(Payload.EventTag, Payload);
 	}
 }
@@ -220,6 +225,7 @@ void UGA_Passive_FindInteractableBase::EndInteraction(bool bTryWaitAgain)
 
 		if (bShouldEndInteraction)
 		{
+			// Notifies interaction end. This also stops ongoing interaction ability.
 			FGameplayEventData Payload;
 			Payload.EventTag = EndInteractionTag;
 			Payload.Instigator = CurrentActorInfo->AvatarActor.Get();

@@ -21,7 +21,7 @@
  * - set EndInteractionTag. This tag must be the same as GA_Passive_FindInteractableBase's EndInteractionTag
  * - (Optional) set ExecuteInteractionTag.
  * - add an ability trigger
- * - its TriggerTag must be the same as GA_Passive_FindInteractableBase's StartInteractionTag
+ * - its TriggerTag must be the same as AbilityTag and GA_Passive_FindInteractableBase's InteractionAbilityTag
  * - its TriggerSouce must be GameplayEvent
  * - grant the ability to ASC. Don't activate this manually because this will be activated by GA_Passive_FindInteractableBase using gameplay event with StartInteractionTag.
  */
