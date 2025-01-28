@@ -7,6 +7,7 @@
 #include "AttributeSet.h"
 #include "GameplayTagContainer.h"
 #include "GameplayAbilitySpecHandle.h"
+#include "GameplayEffects/AttributeSetInitializer.h"
 #include "GASXAbilitySet.generated.h"
 
 class UAttributeSet;
@@ -78,6 +79,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAttributeSet> AttributeSet;
 
+	// Simple AttributeSet Initializer
+	UPROPERTY(EditDefaultsOnly)
+	FAttributeSetInitializer AttributeSetInitializer;
 };
 
 /**

@@ -146,5 +146,10 @@ void UGASXAbilitySet::GiveToAbilitySystem(UAbilitySystemComponent* ASC, FGASXAbi
 		{
 			OutGrantedHandles->AddAttributeSet(NewSet);
 		}
+
+		if (SetToGrant.AttributeSetInitializer.IsValid())
+		{
+			SetToGrant.AttributeSetInitializer.Apply(ASC, 1.f, ASC->MakeEffectContext());
+		}
 	}
 }
