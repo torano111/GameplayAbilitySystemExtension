@@ -12,6 +12,9 @@
 #include "Experience/GASXExperienceManagerComponent.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameplayEffects/AttributeSetInitializer.h"
+#include "DataAssets/GASXPawnData.h"
+#include "GASXBaseCharacter.h"
+#include "AIController.h"
 
 ////////////////////
 ///// UAbilitySystemComponent
@@ -151,6 +154,71 @@ UGASXExperienceManagerComponent* UGASXLibrary::GetExperienceManagerComponent(con
 		Component = GameMode->FindComponentByClass<UGASXExperienceManagerComponent>();
 	}
 	return Component;
+}
+
+APawn* UGASXLibrary::SpawnBotWithPawnData(const UObject* WorldContextObject, TSubclassOf<class AAIController> BotControllerClass, UGASXPawnData* BotPawnData, const FTransform& SpawnTransform, AActor* Owner, APawn* Instigator, ESpawnActorCollisionHandlingMethod SpawnCollisionHandlingOverride, ESpawnActorScaleMethod TransformScaleMethod)
+{
+	APawn* SpawnedPawn = nullptr;
+	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+	{
+		if (BotPawnData != nullptr && BotControllerClass)
+		{
+			// Spawn AI Controller
+			FActorSpawnParameters ControllerSpawnInfo;
+			ControllerSpawnInfo.Owner = Owner;
+			ControllerSpawnInfo.Instigator = Instigator;
+			ControllerSpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			ControllerSpawnInfo.ObjectFlags |= RF_Transient;
+			AAIController* NewController = World->SpawnActor<AAIController>(BotControllerClass, FVector::ZeroVector, FRotator::ZeroRotator, ControllerSpawnInfo);
+
+			if (NewController)
+			{
+				// Spawn bot Pawn
+				FActorSpawnParameters SpawnInfo;
+				SpawnInfo.Owner = Owner;
+				SpawnInfo.Instigator = Instigator;
+				SpawnInfo.ObjectFlags |= RF_Transient;	// Never save the default player pawns into a map.
+				SpawnInfo.bDeferConstruction = true;
+				if (auto PawnClass = BotPawnData->PawnClass)
+				{
+					SpawnedPawn = World->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo);
+					if (SpawnedPawn)
+					{
+						if (AGASXBaseCharacter* GASXBaseCharacter = Cast<AGASXBaseCharacter>(SpawnedPawn))
+						{
+							GASXBaseCharacter->SetPawnData(BotPawnData);
+						}
+						else
+						{
+							UE_LOG(LogGASX, Error, TEXT("UGASXLibrary::SpawnBotWithPawnData: failed to set pawn data to bot because the spawned pawn(%s) is not a subclass of AGASXBaseCharacter."), *GetNameSafe(SpawnedPawn));
+						}
+
+						SpawnedPawn->FinishSpawning(SpawnTransform);
+
+						if (IsValid(SpawnedPawn))
+						{
+							NewController->SetPawn(SpawnedPawn);
+							NewController->Possess(NewController->GetPawn());
+						}
+					}
+					else
+					{
+						UE_LOG(LogGASX, Error, TEXT("UGASXLibrary::SpawnBotWithPawnData: failed to spawn Pawn of class [%s] at [%s]."), *GetNameSafe(PawnClass), *SpawnTransform.ToHumanReadableString());
+					}
+				}
+				else
+				{
+					UE_LOG(LogGASX, Error, TEXT("UGASXLibrary::SpawnBotWithPawnData: failed to spawn Pawn due to NULL pawn class."));
+				}
+			}
+			else
+			{
+				UE_LOG(LogGASX, Error, TEXT("UGASXLibrary::SpawnBotWithPawnData: failed to spawn AIController due to NULL pawn class."));
+			}
+		}
+	}
+
+	return SpawnedPawn;
 }
 
 ////////////////////

@@ -60,7 +60,7 @@ APawn* AGASXGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* Ne
 			{
 				if (const UGASXPawnData* PawnData = GetPawnDataForController(NewPlayer))
 				{
-					GASXBaseCharacter->SetPawnData(PawnData);
+					ensure(GASXBaseCharacter->SetPawnData(PawnData));
 				}
 				else
 				{

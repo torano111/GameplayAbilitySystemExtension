@@ -33,7 +33,8 @@ public class GameplayAbilitySystemExtension : ModuleRules
 				"UMG",
 				"GameFeatures",
 				"ModularGameplay",
-				"ModularGameplayActors"
+				"ModularGameplayActors",
+				"AIModule"
             }
 			);
 			

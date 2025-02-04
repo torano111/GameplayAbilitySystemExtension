@@ -15,15 +15,6 @@ class GASEXTENSION_API AMyBaseCharacter : public AGASXBaseCharacter
 {
 	GENERATED_BODY()
 
-public:
-	// Abilities which will be granted on startup, such as passive abilities. These won't be activated automatically.
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "MyBaseCharacter")
-	TArray<TSubclassOf<class UGASXGameplayAbility>> StartupAbilities;
-
-	// Effects which will be applied on startup, such as attribute initializer.
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "MyBaseCharacter")
-	TArray<TSubclassOf<class UGameplayEffect>> StartupEffects;
-
 protected:
 	TWeakObjectPtr<class UMyAttributeSet> MyAttributeSet;
 

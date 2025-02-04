@@ -25,6 +25,9 @@ AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializ
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnData = nullptr;
+
+	ExtensionEventTag_BindInputsNow = GASXGameplayTags::ExtensionEvent_BindInputsNow;
+	ExtensionEventTag_AbilityReady = GASXGameplayTags::ExtensionEvent_AbilityReady;
 }
 
 bool AGASXBaseCharacter::SetPawnData(const UGASXPawnData* InPawnData)
@@ -38,7 +41,12 @@ bool AGASXBaseCharacter::SetPawnData(const UGASXPawnData* InPawnData)
 		}
 		PawnData = InPawnData;
 	}
-	return false;
+
+	if (!bAbilityReady && bGASInitialized && PawnData && AbilitySystemComponent.IsValid())
+	{
+		GrantAbilities();
+	}
+	return true;
 }
 
 // Called when the game starts or when spawned
@@ -46,6 +54,13 @@ void AGASXBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+}
+
+void AGASXBaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	UninitGameplayAbilitySystem();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void AGASXBaseCharacter::PossessedBy(AController* NewController)
@@ -66,15 +81,48 @@ void AGASXBaseCharacter::PossessedBy(AController* NewController)
 
 void AGASXBaseCharacter::InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* InAvatarActor, AGASXPlayerState* NewPlayerState)
 {
-	if (AbilitySystemComponent.IsValid())
+	if (AbilitySystemComponent.IsValid() && !bGASInitialized)
 	{
+		bGASInitialized = true;
 		AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 		InitializeMovementModeTags();
+
+		if (!bAbilityReady && PawnData)
+		{
+			GrantAbilities();
+		}
+
+		OnGASInitialized.Broadcast();
+	}
+}
+
+void AGASXBaseCharacter::UninitGameplayAbilitySystem()
+{
+	if (AbilitySystemComponent.IsValid() && bGASInitialized)
+	{
+		bGASInitialized = false;
+
+		AbilitySystemComponent->CancelAbilities(nullptr, nullptr);
+		AbilitySystemComponent->ClearAbilityInput();
+		AbilitySystemComponent->RemoveAllGameplayCues();
+
+		if (AbilitySystemComponent->GetOwnerActor() == this)
+		{
+			AbilitySystemComponent->ClearActorInfo();
+		}
+		else if (AbilitySystemComponent->GetAvatarActor() == this)
+		{
+			AbilitySystemComponent->SetAvatarActor(nullptr);
+		}
+
+		OnGASUninitialized.Broadcast();
 	}
 }
 
 void AGASXBaseCharacter::InitializePlayerInput()
 {
+	if (bReadyToBindInputs) return;
+
 	check(InputComponent);
 
 	const APlayerController* PC = GetController<APlayerController>();
@@ -131,8 +179,23 @@ void AGASXBaseCharacter::InitializePlayerInput()
 					InputData.Add(InputConfig, FInputBindHandle(BindHandles));
 				}
 			}
+		}
+	}
 
-			check(AbilitySystemComponent.IsValid());
+	bReadyToBindInputs = true;
+	check(ExtensionEventTag_BindInputsNow.IsValid());
+	const auto NAME_BindInputsNow = FName(*(ExtensionEventTag_BindInputsNow.ToString()));
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow); // For UGameFeatureAction_AddInputContextMapping
+	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_BindInputsNow);	// For UGameFeatureAction_AddInputBinding
+}
+
+void AGASXBaseCharacter::GrantAbilities()
+{
+	if (!bAbilityReady)
+	{
+		check(AbilitySystemComponent.IsValid());
+		if (ensure(PawnData))
+		{
 			for (const UGASXAbilitySet* AbilitySet : PawnData->AbilitySets)
 			{
 				if (AbilitySet)
@@ -141,22 +204,14 @@ void AGASXBaseCharacter::InitializePlayerInput()
 				}
 			}
 
-			if (ensure(PawnData))
-			{
-				AbilitySystemComponent->SetTagRelationshipMapping(PawnData->TagRelationshipMapping);
-			}
+			AbilitySystemComponent->SetTagRelationshipMapping(PawnData->TagRelationshipMapping);
+
+			bAbilityReady = true;
+			check(ExtensionEventTag_AbilityReady.IsValid());
+			const auto NAME_AbilityReady = FName(*(ExtensionEventTag_AbilityReady.ToString()));
+			UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(AbilitySystemComponent->GetOwnerActor(), NAME_AbilityReady);
 		}
 	}
-
-	bReadyToBindInputs = true;
-
-	const auto NAME_AbilityReady = FName(*(GASXGameplayTags::ExtensionEvent_AbilityReady.GetTag().ToString()));
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_AbilityReady);
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_AbilityReady);
-
-	const auto NAME_BindInputsNow = FName(*(GASXGameplayTags::ExtensionEvent_BindInputsNow.GetTag().ToString()));
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow);
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_BindInputsNow);
 }
 
 void AGASXBaseCharacter::BindNativeActions_Implementation(UGASXInputComponent* IC, const UGASXInputConfig* InputConfig)
@@ -233,11 +288,6 @@ void AGASXBaseCharacter::RemoveInputConfig(const UGASXInputConfig* InputConfig)
 			IC->RemoveBinds(HandleData.Data);
 		}
 	}
-}
-
-bool AGASXBaseCharacter::IsReadyToBindInputs() const
-{
-	return bReadyToBindInputs;
 }
 
 // Called every frame

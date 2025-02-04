@@ -24,21 +24,4 @@ void AMyBaseCharacter::InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* I
 	{
 		MyAttributeSet = PS->GetMyAttributeSet();
 	}
-
-	if (AbilitySystemComponent.IsValid())
-	{
-		for (const auto GAClass : StartupAbilities)
-		{
-			auto GA = GAClass->GetDefaultObject<UGASXGameplayAbility>();
-			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GA, 0, -1, this));
-		}
-
-		auto FXContext = AbilitySystemComponent->MakeEffectContext();
-		FXContext.AddSourceObject(this);
-		for (const auto GEClass : StartupEffects)
-		{
-			auto GESpecHandle = AbilitySystemComponent->MakeOutgoingSpec(GEClass, 0, FXContext);
-			AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*GESpecHandle.Data.Get());
-		}
-	}
 }

@@ -14,6 +14,8 @@ class UGASXInputConfig;
 struct FGameplayTag;
 struct FInputMappingContextAndPriority;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGASStateChangedDelegate);
+
 USTRUCT()
 struct FInputBindHandle
 {
@@ -40,6 +42,14 @@ class GAMEPLAYABILITYSYSTEMEXTENSION_API AGASXBaseCharacter : public AModularCha
 	GENERATED_BODY()
 
 public:
+	// Delegate fired when GameplayAbilitySystem is initialized
+	UPROPERTY(BlueprintAssignable)
+	FGASStateChangedDelegate OnGASInitialized;
+
+	// Delegate fired when GameplayAbilitySystem is uninitialized
+	UPROPERTY(BlueprintAssignable)
+	FGASStateChangedDelegate OnGASUninitialized;
+
 	// If this is true and a PlayerState is found, then automatically initializes AbilitySystemComponent and call InitGameplayAbilitySystem in PossessedBy.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GASXBaseCharacter")
 	bool bAutoInitGASOnPossessed;
@@ -62,8 +72,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "GASXBaseCharacter|Input")
 	TArray<FInputMappingContextAndPriority> DefaultInputMappings;
 
-	/** True when player input bindings have been applied, will never be true for non - players */
+	UPROPERTY(EditAnywhere, Category = "GASXBaseCharacter|ExtensionEvent")
+	FGameplayTag ExtensionEventTag_BindInputsNow;
+
+	UPROPERTY(EditAnywhere, Category = "GASXBaseCharacter|ExtensionEvent")
+	FGameplayTag ExtensionEventTag_AbilityReady;
+
 	bool bReadyToBindInputs = false;
+	bool bAbilityReady = false;
+	bool bGASInitialized = false;
 
 	UPROPERTY()
 	TMap<const UGASXInputConfig*, FInputBindHandle> InputData;
@@ -100,19 +117,31 @@ public:
 	// Removes an input config if it has been added
 	void RemoveInputConfig(const UGASXInputConfig* InputConfig);
 
-	// True if this is controlled by a real player and has progressed far enough in initialization where additional input bindings can be added
+	// True if player input bindings have been applied, will never be true for non - players
 	UFUNCTION(BlueprintPure, Category = "GASXBaseCharacter")
-	bool IsReadyToBindInputs() const;
+	bool IsReadyToBindInputs() const { return bReadyToBindInputs; }
+
+	// True if AbilitySets and TagRelationshipMapping have been applied.
+	UFUNCTION(BlueprintPure, Category = "GASXBaseCharacter")
+	bool IsAbilityReady() const { return bAbilityReady; }
+
+	// True if GameplayAbilitySystem is initialized.
+	UFUNCTION(BlueprintPure, Category = "GASXBaseCharacter")
+	bool IsGASInitialized() const { return bGASInitialized; }
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	/** Overridable function called whenever this actor is being removed from a level */
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 	// Place to initialize GAS things, such as ASC, attributes, startup effects and abilities etc.
 	// This should be called in PossessedBy for hero characters, and in BeginPlay for AI controlled characters. NewPlayerState can be nullptr for AI controlled characters.
 	virtual void InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* InAvatarActor, class AGASXPlayerState* NewPlayerState = nullptr);
+	virtual void UninitGameplayAbilitySystem();
 
 	virtual void InitializePlayerInput();
+	virtual void GrantAbilities();
 
 	// Event to bind native actions to their corresponding tags. Use UGASXInputComponent's Bind Native Action node to bind native actions in BP graph.
 	UFUNCTION(BlueprintNativeEvent, Category = "GASXBaseCharacter")

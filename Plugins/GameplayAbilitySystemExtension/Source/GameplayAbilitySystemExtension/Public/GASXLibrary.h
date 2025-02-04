@@ -74,6 +74,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Experience", meta = (WorldContext = "WorldContextObject"))
 	static UGASXExperienceManagerComponent* GetExperienceManagerComponent(const UObject* WorldContextObject);
 
+	UFUNCTION(BlueprintCallable, Category = Game, meta = (WorldContext = "WorldContextObject"))
+	static APawn* SpawnBotWithPawnData(const UObject* WorldContextObject, TSubclassOf<class AAIController> BotControllerClass, class UGASXPawnData* BotPawnData, const FTransform& SpawnTransform, AActor* Owner = nullptr, APawn* Instigator = nullptr, ESpawnActorCollisionHandlingMethod SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::Undefined, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot);
+
 	////////////////////
 	///// Misc.
 
