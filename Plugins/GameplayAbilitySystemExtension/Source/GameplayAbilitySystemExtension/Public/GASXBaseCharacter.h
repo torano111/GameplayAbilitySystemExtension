@@ -58,7 +58,7 @@ protected:
 	TWeakObjectPtr<class UGASXAbilitySystemComponent> AbilitySystemComponent;
 
 	/** Pawn data used to create the pawn. Specified from a spawn function or on a placed instance. */
-	UPROPERTY(EditDefaultsOnly, Category = "GASXBaseCharacter")
+	UPROPERTY(VisibleAnywhere, Category = "GASXBaseCharacter")
 	TObjectPtr<const UGASXPawnData> PawnData;
 
 	///**
