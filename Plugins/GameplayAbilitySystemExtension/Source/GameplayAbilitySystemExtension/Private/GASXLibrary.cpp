@@ -13,7 +13,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameplayEffects/AttributeSetInitializer.h"
 #include "DataAssets/GASXPawnData.h"
-#include "GASXBaseCharacter.h"
+#include "GASXPawnComponent.h"
 #include "AIController.h"
 
 ////////////////////
@@ -184,9 +184,9 @@ APawn* UGASXLibrary::SpawnBotWithPawnData(const UObject* WorldContextObject, TSu
 					SpawnedPawn = World->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo);
 					if (SpawnedPawn)
 					{
-						if (AGASXBaseCharacter* GASXBaseCharacter = Cast<AGASXBaseCharacter>(SpawnedPawn))
+						if (auto GASXPawnComponent = UGASXPawnComponent::FindGASXPawnComponent(SpawnedPawn))
 						{
-							GASXBaseCharacter->SetPawnData(BotPawnData);
+							GASXPawnComponent->SetPawnData(BotPawnData);
 						}
 						else
 						{

@@ -1,7 +1,6 @@
 // Copyright 2024 Toranosuke Ichikawa
 
 #include "GASXTargetType.h"
-#include "GASXBaseCharacter.h"
 #include "GameplayAbilities/GASXGameplayAbility.h"
 
 ////////////////////

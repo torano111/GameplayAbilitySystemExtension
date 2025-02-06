@@ -7,7 +7,6 @@
 #include "Engine/World.h"
 #include "GameFeatures/GameFeatureAction_WorldActionBase.h"
 #include "GASXGameplayTags.h"
-#include "GASXBaseCharacter.h"
 
 #if WITH_EDITOR
 #include "Misc/DataValidation.h"

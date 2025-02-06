@@ -24,5 +24,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "MyBaseCharacter")
 	class UMyAttributeSet* GetMyAttributeSet() const;
 
-	virtual void InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* InAvatarActor, class AGASXPlayerState* NewPlayerState = nullptr) override;
+protected:
+	virtual void OnGASXPawnComponentInitialized(UGASXAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor, AActor* InAvatarActor, class AGASXPlayerState* InPlayerState) override;
 };

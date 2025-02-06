@@ -1,5 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
-// TODO
+
 #pragma once
 
 #include "GameFeatureAction_WorldActionBase.h"

@@ -10,7 +10,6 @@
 #include "Abilities/GameplayAbilityTargetDataFilter.h"
 #include "GASXTargetType.generated.h"
 
-class AGASXBaseCharacter;
 class AActor;
 struct FGameplayEventData;
 

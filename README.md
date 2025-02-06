@@ -42,7 +42,7 @@ GlobalGameplayCueManagerClass=/Script/GameplayAbilitySystemExtension.GASXGamepla
 
 ## Core Gameplay Actors/Objects
 - Use AGASXPlayerController, GASXGameMode and AGASXPlayerState (or subclasses).
-- Subclass AGASXBaseCharacter for your character
+- Subclass AGASXBaseCharacter for your character, or make your own pawn class with UGASXPawnComponent and UGASXAbilitySystemComponent.
 - Your GameplayAbilities must inherit from UGASXGameplayAbility
 
 # About Experience

@@ -5,7 +5,6 @@
 #include "AbilityCosts/GASXAbilityCost.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GASXTargetType.h"
-#include "GASXBaseCharacter.h"
 #include "GameplayEffects/GASXGameplayEffect_Cooldown.h"
 #include "AbilitySystemGlobals.h"
 

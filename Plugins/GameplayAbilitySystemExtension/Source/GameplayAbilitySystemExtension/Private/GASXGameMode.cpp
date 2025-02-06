@@ -9,10 +9,10 @@
 #include "Engine/AssetManager.h"
 #include "GASXPlayerState.h"
 #include "DataAssets/GASXPawnData.h"
-#include "GASXBaseCharacter.h"
 #include "GASXWorldSettings.h"
 #include "GASXPluginSettings.h"
 #include "GASXAssetManager.h"
+#include "GASXPawnComponent.h"
 
 AGASXGameMode::AGASXGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -56,11 +56,11 @@ APawn* AGASXGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* Ne
 	{
 		if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
 		{
-			if (AGASXBaseCharacter* GASXBaseCharacter = Cast<AGASXBaseCharacter>(SpawnedPawn))
+			if (auto GASXPawnComponent = UGASXPawnComponent::FindGASXPawnComponent(SpawnedPawn))
 			{
 				if (const UGASXPawnData* PawnData = GetPawnDataForController(NewPlayer))
 				{
-					ensure(GASXBaseCharacter->SetPawnData(PawnData));
+					ensure(GASXPawnComponent->SetPawnData(PawnData));
 				}
 				else
 				{

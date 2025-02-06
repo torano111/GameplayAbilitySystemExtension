@@ -11,7 +11,7 @@
 #include "GameFeatures/GameFeatureAction_WorldActionBase.h"
 #include "DataAssets/GASXInputConfig.h"
 #include "GASXGameplayTags.h"
-#include "GASXBaseCharacter.h"
+#include "GASXPawnComponent.h"
 
 #if WITH_EDITOR
 #include "Misc/DataValidation.h"
@@ -134,15 +134,15 @@ void UGameFeatureAction_AddInputBinding::AddInputBindingForPlayer(APawn* Pawn, F
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
-			auto GASXBaseCharacter = Cast<AGASXBaseCharacter>(Pawn);
-			auto bReady = GASXBaseCharacter != nullptr ? GASXBaseCharacter->IsReadyToBindInputs() : false;
-			if (GASXBaseCharacter != nullptr && bReady)
+			auto GASXPawnComponent = UGASXPawnComponent::FindGASXPawnComponent(Pawn);
+			auto bReady = GASXPawnComponent != nullptr ? GASXPawnComponent->IsReadyToBindInputs() : false;
+			if (GASXPawnComponent != nullptr && bReady)
 			{
 				for (const TSoftObjectPtr<const UGASXInputConfig>& Entry : InputConfigs)
 				{
 					if (const UGASXInputConfig* BindSet = Entry.Get())
 					{
-						GASXBaseCharacter->AddAdditionalInputConfig(BindSet);
+						GASXPawnComponent->AddAdditionalInputConfig(BindSet);
 					}
 				}
 			}
@@ -163,14 +163,14 @@ void UGameFeatureAction_AddInputBinding::RemoveInputBinding(APawn* Pawn, FPerCon
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
-			auto GASXBaseCharacter = Cast<AGASXBaseCharacter>(Pawn);
-			if (GASXBaseCharacter != nullptr)
+			auto GASXPawnComponent = UGASXPawnComponent::FindGASXPawnComponent(Pawn);
+			if (GASXPawnComponent != nullptr)
 			{
 				for (const TSoftObjectPtr<const UGASXInputConfig>& Entry : InputConfigs)
 				{
 					if (const UGASXInputConfig* BindSet = Entry.Get())
 					{
-						GASXBaseCharacter->RemoveInputConfig(BindSet);
+						GASXPawnComponent->RemoveInputConfig(BindSet);
 					}
 				}
 			}

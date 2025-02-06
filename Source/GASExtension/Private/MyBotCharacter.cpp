@@ -2,6 +2,7 @@
 
 #include "MyBotCharacter.h"
 #include "GASXAbilitySystemComponent.h"
+#include "GASXPawnComponent.h"
 
 AMyBotCharacter::AMyBotCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -23,6 +24,9 @@ void AMyBotCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	check(AbilitySystemComponent.IsValid());
-	InitGameplayAbilitySystem(this, this, nullptr);
+	if (ensureMsgf(AbilitySystemComponent.IsValid(), TEXT("Failed to initialize GASXPawnComponent because AbilitySystemComponent is not valid.")))
+	{
+		check(GetGASXPawnComponent());
+		GetGASXPawnComponent()->Initialize(AbilitySystemComponent.Get(), this, nullptr);
+	}
 }

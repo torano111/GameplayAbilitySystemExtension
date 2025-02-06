@@ -15,11 +15,11 @@ UMyAttributeSet* AMyBaseCharacter::GetMyAttributeSet() const
 	return MyAttributeSet.Get();
 }
 
-void AMyBaseCharacter::InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* InAvatarActor, AGASXPlayerState* NewPlayerState)
-{
-	Super::InitGameplayAbilitySystem(InOwnerActor, InAvatarActor, NewPlayerState);
+void AMyBaseCharacter::OnGASXPawnComponentInitialized(UGASXAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor, AActor* InAvatarActor, AGASXPlayerState* InPlayerState)
+{	
+	Super::OnGASXPawnComponentInitialized(InAbilitySystemComponent, InOwnerActor, InAvatarActor, InPlayerState);
 
-	AMyPlayerState* PS = Cast<AMyPlayerState>(NewPlayerState);
+	AMyPlayerState* PS = Cast<AMyPlayerState>(InPlayerState);
 	if (PS)
 	{
 		MyAttributeSet = PS->GetMyAttributeSet();

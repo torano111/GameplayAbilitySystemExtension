@@ -1,20 +1,13 @@
 // Copyright 2024 Toranosuke Ichikawa
 
 #include "GASXBaseCharacter.h"
+#include "GASXPawnComponent.h"
 #include "GASXPlayerState.h"
 #include "GASXAbilitySystemComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "DataAssets/GASXPawnData.h"
-#include "DataAssets/GASXAbilitySet.h"
 #include "GASXInputComponent.h"
 #include "Components/GameFrameworkComponentManager.h"
-#include "GASXGameplayTags.h"
-#include "GASXDataTypes.h"
-#include "UserSettings/EnhancedInputUserSettings.h"
-#include "InputMappingContext.h"
-#include "GASXAssetManager.h"
-#include "GASXGameplayTags.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GASXGameplayTags.h"
 
 // Sets default values
 AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializer)
@@ -24,29 +17,7 @@ AGASXBaseCharacter::AGASXBaseCharacter(const FObjectInitializer& ObjectInitializ
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	PawnData = nullptr;
-
-	ExtensionEventTag_BindInputsNow = GASXGameplayTags::ExtensionEvent_BindInputsNow;
-	ExtensionEventTag_AbilityReady = GASXGameplayTags::ExtensionEvent_AbilityReady;
-}
-
-bool AGASXBaseCharacter::SetPawnData(const UGASXPawnData* InPawnData)
-{
-	if (InPawnData)
-	{
-		if (PawnData)
-		{
-			UE_LOG(LogTemp, Error, TEXT("Trying to set PawnData [%s] on pawn [%s] that already has valid PawnData [%s]."), *GetNameSafe(InPawnData), *GetNameSafe(this), *GetNameSafe(PawnData));
-			return false;
-		}
-		PawnData = InPawnData;
-	}
-
-	if (!bAbilityReady && bGASInitialized && PawnData && AbilitySystemComponent.IsValid())
-	{
-		GrantAbilities();
-	}
-	return true;
+	GASXPawnComponent = ObjectInitializer.CreateDefaultSubobject<UGASXPawnComponent>(this, TEXT("GASXPawnComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -54,247 +25,40 @@ void AGASXBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (GASXPawnComponent)
+	{
+		if (GASXPawnComponent->IsInitialized())
+		{
+			auto NewAbilitySystemComponent = GASXPawnComponent->GetGASXAbilitySystemComponent();
+			OnGASXPawnComponentInitialized(NewAbilitySystemComponent, NewAbilitySystemComponent ? NewAbilitySystemComponent->GetOwnerActor() : nullptr, NewAbilitySystemComponent ? NewAbilitySystemComponent->GetAvatarActor() : nullptr, Cast<AGASXPlayerState>(GetPlayerState()));
+		}
+		else
+		{
+			GASXPawnComponent->OnInitialized.AddDynamic(this, &AGASXBaseCharacter::OnGASXPawnComponentInitialized);
+		}
+	}
 }
 
-void AGASXBaseCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	UninitGameplayAbilitySystem();
+void AGASXBaseCharacter::OnGASXPawnComponentInitialized(UGASXAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor, AActor* InAvatarActor, AGASXPlayerState* InPlayerState)
+{	
+	AbilitySystemComponent = InAbilitySystemComponent;
 
-	Super::EndPlay(EndPlayReason);
+	InitializeMovementModeTags();
 }
 
 void AGASXBaseCharacter::PossessedBy(AController* NewController)
 {
-	// Initialize GAS before ReceivePossessed (BP event Possessed) if needed
+	// Initialize GASXPawnComponent before ReceivePossessed (BP event Possessed) if needed
 	if (bAutoInitGASOnPossessed)
 	{
 		AGASXPlayerState* PS = NewController ? Cast<AGASXPlayerState>(NewController->PlayerState) : nullptr;
-		if (PS)
+		if (ensureMsgf(PS && GASXPawnComponent, TEXT("Failed to initialize GASXPawnComponent on possessed: PlayerState=%s, GASXPawnComponent=%s"), *FString(PS ? PS->GetName() : "NULL"), *FString(GASXPawnComponent ? GASXPawnComponent->GetName() : "NULL")))
 		{
-			if (!AbilitySystemComponent.IsValid()) AbilitySystemComponent = PS->GetGASXAbilitySystemComponent();
-			InitGameplayAbilitySystem(PS, this, PS);
+			GASXPawnComponent->Initialize(PS->GetGASXAbilitySystemComponent(), PS, PS);
 		}
 	}
 
 	Super::PossessedBy(NewController);
-}
-
-void AGASXBaseCharacter::InitGameplayAbilitySystem(AActor* InOwnerActor, AActor* InAvatarActor, AGASXPlayerState* NewPlayerState)
-{
-	if (AbilitySystemComponent.IsValid() && !bGASInitialized)
-	{
-		bGASInitialized = true;
-		AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, InAvatarActor);
-		InitializeMovementModeTags();
-
-		if (!bAbilityReady && PawnData)
-		{
-			GrantAbilities();
-		}
-
-		OnGASInitialized.Broadcast();
-	}
-}
-
-void AGASXBaseCharacter::UninitGameplayAbilitySystem()
-{
-	if (AbilitySystemComponent.IsValid() && bGASInitialized)
-	{
-		bGASInitialized = false;
-
-		AbilitySystemComponent->CancelAbilities(nullptr, nullptr);
-		AbilitySystemComponent->ClearAbilityInput();
-		AbilitySystemComponent->RemoveAllGameplayCues();
-
-		if (AbilitySystemComponent->GetOwnerActor() == this)
-		{
-			AbilitySystemComponent->ClearActorInfo();
-		}
-		else if (AbilitySystemComponent->GetAvatarActor() == this)
-		{
-			AbilitySystemComponent->SetAvatarActor(nullptr);
-		}
-
-		OnGASUninitialized.Broadcast();
-	}
-}
-
-void AGASXBaseCharacter::InitializePlayerInput()
-{
-	if (bReadyToBindInputs) return;
-
-	check(InputComponent);
-
-	const APlayerController* PC = GetController<APlayerController>();
-	check(PC);
-
-	const ULocalPlayer* LP = PC->GetLocalPlayer();
-	check(LP);
-
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	check(Subsystem);
-
-	Subsystem->ClearAllMappings();
-
-	if (PawnData)
-	{
-		if (const UGASXInputConfig* InputConfig = PawnData->InputConfig)
-		{
-			for (const FInputMappingContextAndPriority& Mapping : DefaultInputMappings)
-			{
-				bool bTrackInAssetManager = false;
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-				bTrackInAssetManager = true;
-#endif
-				UGASXAssetManager& AssetManager = UGASXAssetManager::Get();
-				if (UInputMappingContext* IMC = AssetManager.GetAsset(Mapping.InputMapping, bTrackInAssetManager))	// explicitly load the asset
-				{
-					if (Mapping.bRegisterWithSettings)
-					{
-						if (UEnhancedInputUserSettings* Settings = Subsystem->GetUserSettings())
-						{
-							Settings->RegisterInputMappingContext(IMC);
-						}
-
-						FModifyContextOptions Options = {};
-						Options.bIgnoreAllPressedKeysUntilRelease = false;
-						// Actually add the config to the local player							
-						Subsystem->AddMappingContext(IMC, Mapping.Priority, Options);
-					}
-				}
-			}
-
-			// The GASXInputComponent has some additional functions to map Gameplay Tags to an Input Action.
-			UGASXInputComponent* IC = Cast<UGASXInputComponent>(InputComponent);
-			if (ensureMsgf(IC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UGASXInputComponent or a subclass of it.")))
-			{
-				if (ensureMsgf(!InputData.Contains(InputConfig), TEXT("AGASXBaseCharacter::InitializePlayerInput: Canceled to bind InputConfig(%s) because InputData already contained it."), *(InputConfig->GetName())))
-				{
-					// This is where we actually bind and input action to a gameplay tag, which means that Gameplay Ability Blueprints will
-					// be triggered directly by these input actions Triggered events. 
-					TArray<uint32> BindHandles;
-					IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-
-					BindNativeActions(IC, InputConfig);
-					InputData.Add(InputConfig, FInputBindHandle(BindHandles));
-				}
-			}
-		}
-	}
-
-	bReadyToBindInputs = true;
-	check(ExtensionEventTag_BindInputsNow.IsValid());
-	const auto NAME_BindInputsNow = FName(*(ExtensionEventTag_BindInputsNow.ToString()));
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(const_cast<APlayerController*>(PC), NAME_BindInputsNow); // For UGameFeatureAction_AddInputContextMapping
-	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, NAME_BindInputsNow);	// For UGameFeatureAction_AddInputBinding
-}
-
-void AGASXBaseCharacter::GrantAbilities()
-{
-	if (!bAbilityReady)
-	{
-		check(AbilitySystemComponent.IsValid());
-		if (ensure(PawnData))
-		{
-			for (const UGASXAbilitySet* AbilitySet : PawnData->AbilitySets)
-			{
-				if (AbilitySet)
-				{
-					AbilitySet->GiveToAbilitySystem(AbilitySystemComponent.Get(), nullptr);
-				}
-			}
-
-			AbilitySystemComponent->SetTagRelationshipMapping(PawnData->TagRelationshipMapping);
-
-			bAbilityReady = true;
-			check(ExtensionEventTag_AbilityReady.IsValid());
-			const auto NAME_AbilityReady = FName(*(ExtensionEventTag_AbilityReady.ToString()));
-			UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(AbilitySystemComponent->GetOwnerActor(), NAME_AbilityReady);
-		}
-	}
-}
-
-void AGASXBaseCharacter::BindNativeActions_Implementation(UGASXInputComponent* IC, const UGASXInputConfig* InputConfig)
-{
-	// A subclass should implement this as needed.
-
-	// Example
-	//IC->BindNativeAction(InputConfig, LyraGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ false);
-	//IC->BindNativeAction(InputConfig, LyraGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &ThisClass::Input_LookMouse, /*bLogIfNotFound=*/ false);
-	//IC->BindNativeAction(InputConfig, LyraGameplayTags::InputTag_Look_Stick, ETriggerEvent::Triggered, this, &ThisClass::Input_LookStick, /*bLogIfNotFound=*/ false);
-	//IC->BindNativeAction(InputConfig, LyraGameplayTags::InputTag_Crouch, ETriggerEvent::Triggered, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ false);
-	//IC->BindNativeAction(InputConfig, LyraGameplayTags::InputTag_AutoRun, ETriggerEvent::Triggered, this, &ThisClass::Input_AutoRun, /*bLogIfNotFound=*/ false);
-}
-
-void AGASXBaseCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
-{
-	if (auto ASC = GetGASXAbilitySystemComponent())
-	{
-		ASC->AbilityInputTagPressed(InputTag);
-	}
-}
-
-void AGASXBaseCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
-{
-	if (auto ASC = GetGASXAbilitySystemComponent())
-	{
-		ASC->AbilityInputTagReleased(InputTag);
-	}
-}
-
-void AGASXBaseCharacter::AddAdditionalInputConfig(const UGASXInputConfig* InputConfig)
-{
-	TArray<uint32> BindHandles;
-
-	const APlayerController* PC = GetController<APlayerController>();
-	check(PC);
-
-	const ULocalPlayer* LP = PC->GetLocalPlayer();
-	check(LP);
-
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	check(Subsystem);
-
-	UGASXInputComponent* IC = Cast<UGASXInputComponent>(InputComponent);
-	if (ensureMsgf(IC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UGASXInputComponent or a subclass of it.")))
-	{
-		if (ensureMsgf(!InputData.Contains(InputConfig), TEXT("AGASXBaseCharacter::AddAdditionalInputConfig: Canceled to bind InputConfig(%s) because InputData already contained it."), *(InputConfig->GetName())))
-		{
-			IC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-			InputData.Add(InputConfig, FInputBindHandle(BindHandles));
-		}
-	}
-}
-
-void AGASXBaseCharacter::RemoveInputConfig(const UGASXInputConfig* InputConfig)
-{
-	TArray<uint32> BindHandles;
-
-	const APlayerController* PC = GetController<APlayerController>();
-	check(PC);
-
-	const ULocalPlayer* LP = PC->GetLocalPlayer();
-	check(LP);
-
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = LP->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	check(Subsystem);
-
-	UGASXInputComponent* IC = Cast<UGASXInputComponent>(InputComponent);
-	if (ensureMsgf(IC, TEXT("Unexpected Input Component class! The Gameplay Abilities will not be bound to their inputs. Change the input component to UGASXInputComponent or a subclass of it.")))
-	{
-		if (InputData.Contains(InputConfig))
-		{
-			auto HandleData = InputData.FindAndRemoveChecked(InputConfig);
-			IC->RemoveBinds(HandleData.Data);
-		}
-	}
-}
-
-// Called every frame
-void AGASXBaseCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -302,17 +66,27 @@ void AGASXBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	InitializePlayerInput();
+	auto IC = Cast<UGASXInputComponent>(PlayerInputComponent);
+	if (ensureMsgf(IC && GASXPawnComponent, TEXT("Failed to initialize player input: GASXInputComponent=%s, GASXPawnComponent=%s"), *FString(IC ? IC->GetName() : "NULL"), *FString(GASXPawnComponent ? GASXPawnComponent->GetName() : "NULL")))
+	{
+		GASXPawnComponent->InitializePlayerInput(IC);
+	}
+	
 }
 
 UAbilitySystemComponent* AGASXBaseCharacter::GetAbilitySystemComponent() const
 {
-	return AbilitySystemComponent.Get();
+	return GetGASXAbilitySystemComponent();
 }
 
 UGASXAbilitySystemComponent* AGASXBaseCharacter::GetGASXAbilitySystemComponent() const
 {
 	return AbilitySystemComponent.Get();
+}
+
+UGASXPawnComponent* AGASXBaseCharacter::GetGASXPawnComponent() const
+{
+	return GASXPawnComponent;
 }
 
 void AGASXBaseCharacter::InitializeMovementModeTags()
