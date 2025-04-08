@@ -16,7 +16,7 @@ namespace GASXConsoleVariables
 		TEXT("gasx.interaction.debugpassiveinteract"),
 		DebugPassiveInteract,
 		TEXT("If true, debug passive interact ability."),
-		ECVF_Default);
+		ECVF_Cheat);
 }
 
 UGA_Passive_FindInteractableBase::UGA_Passive_FindInteractableBase()

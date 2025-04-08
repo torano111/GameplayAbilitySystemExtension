@@ -15,7 +15,7 @@ namespace GASXConsoleVariables
 		TEXT("gasx.interaction.debuginteract"),
 		DebugInteract,
 		TEXT("If true, debug main interact ability."),
-		ECVF_Default);
+		ECVF_Cheat);
 }
 
 UGA_PerformInteractBase::UGA_PerformInteractBase()
